@@ -43,7 +43,7 @@ module.exports = NoGapDef.component({
 
                     // only staff members may set their display role
                     // NOTE: We cannot use `isStaff` here, since it checks against the `displayRole`, which might currently be demoted
-                    if (!user || user.role <= UserRole.Student) {
+                    if (!user || user.role <= UserRole.StandardUser) {
                         return Promise.reject(makeError('error.invalid.request'));
                     }
                     // one can never increase one's own role
@@ -112,7 +112,7 @@ module.exports = NoGapDef.component({
 
                     /**
                      * Change display role for staff to see the website
-                     * from a student's point of view.
+                     * from an average user's point of view.
                      */
                     var changeDisplayRole = function(newRole) {
                         $scope.busyRole = true;
@@ -128,13 +128,13 @@ module.exports = NoGapDef.component({
                         .catch($scope.handleError.bind($scope));
                     };
 
-                    // set student display role
-                    $scope.clickStudentDisplayRole = function() {
-                        var newRole = Instance.User.UserRole.Student;
+                    // change to standard user display role
+                    $scope.clickStandardUserDisplayRole = function() {
+                        var newRole = Instance.User.UserRole.StandardUser;
                         changeDisplayRole(newRole);
                     };
 
-                    // change back to default role
+                    // change back to own default role
                     $scope.clickDefaultDisplayRole = function() {
                         var newRole = Instance.User.currentUser.role;
                         changeDisplayRole(newRole);
@@ -177,7 +177,7 @@ module.exports = NoGapDef.component({
                         // TODO: This is a hack to update the "urgent marker" on demand...
                         ThisComponent.page.navButton && ThisComponent.page.navButton.setUrgentMarker(user && user.role != user.displayRole);
 
-                        return user && user.name;
+                        return user && user.userName;
                     }
                 });
             },

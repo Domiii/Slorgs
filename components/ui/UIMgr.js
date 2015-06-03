@@ -20,6 +20,7 @@ module.exports = NoGapDef.component({
                     js: [
                         // jQuery
                         'lib/jquery/jquery-2.1.0.min.js',
+                        'lib/jquery-ui/jquery-ui.min.js',
 
                         // Angular JS
                         // 'lib/angular/angular.min.js',
@@ -328,10 +329,11 @@ module.exports = NoGapDef.component({
 
             addPageGroup: function(group) {
                 console.assert(group.mayActivate, 'Page group must define a `mayActivate` method.');
-                console.assert(group.pageComponents, 'Page group must define a `pageComponents` array.');
+                console.assert(group.pageComponents || group.otherComponents, 'Page group must define a `pageComponents` array.');
 
                 // merge `pageComponents` and `otherComponents` into `allComponents`
                 // start with `otherComponents` (non-UI components), so they are loaded first
+                group.pageComponents = group.pageComponents || [];
                 group.allComponents = group.otherComponents ? group.otherComponents.concat(group.pageComponents) : group.pageComponents;
 
                 group.pages = [];
@@ -869,6 +871,12 @@ module.exports = NoGapDef.component({
             },
 
             _onPageDeactivate: function(page, newPage) {
+                // disable running timer(s)
+                if (page.component._refreshTimer) {
+                    clearTimeout(page.component._refreshTimer);
+                    page.component._refreshTimer = null;
+                }
+
                 // fire event
                 this._callOnPageDeactivateOnComponent(page.component, newPage);
 
@@ -939,19 +947,50 @@ module.exports = NoGapDef.component({
                     parentPage.navButton.active = true;
                     activeButton = parentPage.navButton;
                 }
+
+                var component = page.component;
                 
                 // re-compute arguments
-                pageArgs = pageArgs || page.component.getPageArgs();
+                pageArgs = pageArgs || component.getPageArgs();
 
                 // this creates the page scope
                 invalidateView();
-                
-                return this._callOnPageActivateOnComponent(page.component, pageArgs)
+
+                // start timer to call `refreshData`
+                if (component.refreshData) {
+                    ThisComponent._doRefresh(component);
+                }
+
+                // call `onPageActivate`
+                return this._callOnPageActivateOnComponent(component, pageArgs)
                 .bind(this)
                 .then(function() {
                     // add history entry
-                    Instance.UIMgr.updateAddressBar(page.component, true);
+                    Instance.UIMgr.updateAddressBar(component, true);
                 });
+            },
+
+            _doRefresh: function(component) {
+                var minRefreshDelay = 300;
+                var delay = component.refreshDelay || Instance.AppConfig.getValue('defaultPageRefreshDelay');
+                if (isNaN(delay) || delay < minRefreshDelay) {
+                    // sanity check
+                    console.error('refreshDelay too fast for page: ' + page.name);
+                    delay = minRefreshDelay;
+                }
+                
+                component._refreshTimer = setTimeout(function() {
+                    Promise.resolve()
+                    .then(function() {
+                        if (!component.refreshPaused) {
+                            return component.refreshData();
+                        }
+                    })
+                    .finally(function() {
+                        // repeat
+                        ThisComponent._doRefresh(component);
+                    });
+                }, delay);
             },
                     
             /**
@@ -1020,6 +1059,7 @@ module.exports = NoGapDef.component({
 
                     // flag as UI newComponent
                     newComponent.isUI = true;
+                    newComponent.refreshAddressBar = Instance.UIMgr.updateAddressBar.bind(Instance.UIMgr, newComponent, true);
                 }
 
                 // hook-up all component events

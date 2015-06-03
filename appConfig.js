@@ -73,7 +73,7 @@ module.exports = {
     // ########################################################################################################################
     // Mostly constant options
 
-    'title': 'Sample App',
+    'title': 'Slorgs',
 
     // folder containing files, accessible by clients
     'uploadFolder': 'uploads/',
@@ -164,8 +164,7 @@ module.exports = {
             'ui/Main',
 
             // guest + unregistered pages:
-            'ui/guest/GuestPage',
-            'ui/guest/ProfilePage',
+            'ui/login/LoginPage',
 
             // user pages:
             'ui/home/HomePage',

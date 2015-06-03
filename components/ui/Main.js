@@ -39,6 +39,12 @@ module.exports = NoGapDef.component({
                      * @see http://momentjs.com/
                      */
                     'lib/moment',
+
+                    /**
+                     * moment.js for working with time, dates and timespans
+                     * @see http://momentjs.com/
+                     */
+                    'lib/bcrypt',
                     
                     // squishy for classes, enums and some other goodies
                     'js/squishy/squishy',
@@ -122,7 +128,7 @@ module.exports = NoGapDef.component({
                 this.Instance.CacheUtil.initCaches();
 
                 // sanity check: Make sure, User cache is present
-                console.assert(this.Instance.User.users, 'INTERNAL ERROR: Cache installation failed.');
+                console.assert(this.Instance.User.users, 'INITIALIZATION FAILED: Cache installation failed.');
 
                 // resume user session
                 return this.Instance.User.resumeSession();
@@ -170,8 +176,12 @@ module.exports = NoGapDef.component({
              * Guest clients get access to these components.
              */
             {
+                otherComponents: [
+                    'FacebookApi'
+                ],
+                
                 pageComponents: [
-                    'GuestPage'
+                    'LoginPage'
                 ],
                 mayActivate: function() {
                     return !Instance.User.currentUser;
@@ -197,21 +207,18 @@ module.exports = NoGapDef.component({
             },
 
 
-            /**
-             * Logged in and unregistered users get access to these components
-             */     
-           {
-                otherComponents: [
-                    'FacebookApi'
-                ],
+           //  /**
+           //   * Logged in and unregistered users get access to these components
+           //   */     
+           // {
 
-                pageComponents: [
-                    'ProfilePage'
-                ],
-                mayActivate: function() {
-                    return Instance.User.currentUser && Instance.User.currentUser.displayRole >= UserRole.Unregistered;
-                }
-            },
+           //      pageComponents: [
+           //          'ProfilePage'
+           //      ],
+           //      mayActivate: function() {
+           //          return Instance.User.currentUser && Instance.User.currentUser.displayRole >= UserRole.Unregistered;
+           //      }
+           //  },
 
 
             /**
@@ -534,6 +541,9 @@ module.exports = NoGapDef.component({
              * 
              */
             initClient: function() {
+                // bcrypt does some weird things... Need some fixing uppin` so it works the same on Node and in the browser
+                squishy.getGlobalContext().bcrypt = dcodeIO.bcrypt;
+
                 // initialize locals
                 UserRole = Instance.User.UserRole;
 

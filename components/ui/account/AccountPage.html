@@ -32,19 +32,13 @@
     <div class="panel panel-primary">
         <div class="panel-heading">
             <div class="panel-title">
-                <localize key="account.yourAccount"></localize> - <span>{{currentUser.name}}</span>
+                <localize key="account.yourAccount"></localize> - <span>{{currentUser.userName}}</span>
             </div>
         </div>
         <div class="panel-body">
-
-                    <a ng-disabled="busy"
-                class="btn btn-lg btn-danger"
-                ng-click="gotoPage('Profile'); busy = true;">
-                Visit your Profile
-                        <span ng-style="{visibility: busy && 'visible' || 'hidden'}">
-                            <i class="fa fa-spinner fa-spin"></i>
-                        </span>
-                    </a>
+            <span>
+                Hello!
+            </span>
         </div> <!-- panel-body -->
     </div> <!-- panel -->
 
@@ -64,7 +58,9 @@
             <!-- Language selection -->
             <div class="btn-group" dropdown is-open="status.isopen">
                 <button type="button" class="btn btn-lg btn-fancy dropdown-toggle" ng-disabled="disabled">
-                    <localize key="account.currentLanguage"/> - <localize key="{{currentUser.locale}}"/>
+                    <localize key="account.currentLanguage"></localize> - 
+                    <localize key="{{currentUser.locale}}"></localize>
+
                     <span ng-show="!busyLocale" class="caret"></span>
                     <span ng-show="busyLocale"><i class="fa fa-spinner fa-spin"></i></span>
                 </button>
@@ -94,12 +90,12 @@
         <div class="panel-body">
 
 
-            <!-- Change to Student View -->
+            <!-- Change to stand user View -->
             <div>
                 <a ng-disabled="busyRole"
                     class="btn btn-lg btn-fancy" 
-                    ng-click="clickStudentDisplayRole()">
-                        <localize key="account.changeToStudentView" />
+                    ng-click="clickStandardUserDisplayRole()">
+                        <localize key="account.changeToStudentView"></localize>
                         <span ng-style="{visibility: busyRole && 'visible' || 'hidden'}"><i class="fa fa-spinner fa-spin"></i></span>
                 </a>
             </div>

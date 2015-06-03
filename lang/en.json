@@ -44,11 +44,10 @@
 
 
     "page.Home": "Home",
-    "page.Group": "Group",
-    "page.Activity": "Activity",
+    "page.Login": "Login",
     "page.Account": "Account",
     "page.Help": "Help",
-    "page.Settings": "Settings",
+    "page.Admin": "Admin",
 
     "guest.facebooklogin": "Facebook Login",
     
