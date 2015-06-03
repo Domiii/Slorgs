@@ -1,3 +1,19 @@
 <div class="fill container-page" ng-controller="homeCtrl">
-	
+	<br />
+	<br />
+	<br />
+	<br />
+	<div springy-graph ng-model="graphSettings"
+		style="margin: auto; width: 100px; height: 100px; background-color: lightgreen;">
+
+		<div springy-graph-node ng-repeat="node in nodes"
+			ng-model="node">
+			{{node.id}}
+		</div>
+<!-- 
+		<springy-graph-edge ng-repeat="edge in edges"
+			ng-model="edge">
+			{{edge}}
+		</springy-graph-edge> -->
+	</div>
 </div>

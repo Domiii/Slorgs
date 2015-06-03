@@ -85,6 +85,7 @@ GLOBAL.Promise = Sequelize.Promise || require('bluebird');
 // setup long stack traces
 GLOBAL.Promise.longStackTraces();
 
+
 // ####################################################################################
 // Node core settings
 

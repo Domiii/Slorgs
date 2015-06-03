@@ -48,14 +48,29 @@ module.exports = NoGapDef.component({
             },
 
             /**
-             * Prepares the home page controller.
+             * Prepares the page controller
              */
             setupUI: function(UIMgr, app) {
-                // create Home controller
+                // create page controller
                 app.lazyController('homeCtrl', function($scope) {
                     UIMgr.registerPageScope(ThisComponent, $scope);
                     
-                    // customize your HomePage's $scope here:
+                    // customize your $scope here:
+                    $scope.nodes = [{
+                        id: 1
+                    },{
+                        id: 2
+                    },{
+                        id: 3
+                    }];
+
+                    $scope.edges = [{
+                        from: 1,
+                        to: 2
+                    },{
+                        from: 2,
+                        to: 3
+                    }]
                 });
 
                 // register page
