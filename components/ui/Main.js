@@ -567,6 +567,11 @@ module.exports = NoGapDef.component({
                 angularApp.run(['$rootScope', function($rootScope) {
                     var localizer = Instance.Localizer.Default;
 
+                    // JS core functions
+                    $rootScope.Math = Math;
+                    $rootScope.JSON = JSON;
+                    $rootScope.Date = Date;
+
                     // localize
                     $rootScope.localize = localizer.lookUp.bind(localizer);
 

@@ -57,19 +57,52 @@ module.exports = NoGapDef.component({
                     
                     // customize your $scope here:
                     $scope.nodes = [{
-                        id: 1
+                        id: 1,
+                        data: {
+                            isStatic: true,
+                            initialPosition: new Springy.Vector(-3, -4)
+                        }
                     },{
-                        id: 2
+                        id: 2,
+                        data: {
+                            dontAttractToCenter: true
+                        }
                     },{
-                        id: 3
+                        id: 3,
+                        data: {
+                            dontAttractToCenter: true
+                        }
+                    },{
+                        id: 4,
+                        data: {
+                            dontAttractToCenter: true
+                        }
+                    },{
+                        id: 5,
+                        data: {
+                            isStatic: true,
+                            initialPosition: new Springy.Vector(-3, 4)
+                        }
                     }];
 
                     $scope.edges = [{
                         from: 1,
                         to: 2
                     },{
-                        from: 2,
+                        from: 1,
                         to: 3
+                    },{
+                        from: 1,
+                        to: 4
+                    },{
+                        from: 2,
+                        to: 5
+                    },{
+                        from: 3,
+                        to: 5
+                    },{
+                        from: 4,
+                        to: 5
                     }]
                 });
 

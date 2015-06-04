@@ -19,42 +19,46 @@
 
 
 			// get graph settings
-			var graphConfig = $ngModelCtrl.$modelValue || {};
+			var allGraphData = $ngModelCtrl.$modelValue || {};
 			
-			var stiffness = graphConfig.stiffness || 400.0;
-			var repulsion = graphConfig.repulsion || 400.0;
-			var damping = graphConfig.damping || 0.5;
-			var minEnergyThreshold = graphConfig.minEnergyThreshold || 0.00001;
+			var stiffness = allGraphData.stiffness || 400.0;
+			var repulsion = allGraphData.repulsion || 400.0;
+			var damping = allGraphData.damping || 0.5;
+			var minEnergyThreshold = allGraphData.minEnergyThreshold || 0.000001;
 
 			// create new graph
-			var graph = graphConfig.graph = $scope.graph = new Springy.Graph();
+			var graph = allGraphData.graph = $scope.graph = new Springy.Graph();
 
             // create layout
-			var layout = graphConfig.layout = $scope.layout = new Springy.Layout.ForceDirected(graph, stiffness, repulsion, damping, minEnergyThreshold);
+			var layout = allGraphData.layout = $scope.layout = new Springy.Layout.ForceDirected(graph, stiffness, repulsion, damping, minEnergyThreshold);
 
 			// convert to/from screen coordinates
 			var toScreen = function(p) {
+				var currentBB = layout.getBoundingBox();
+				var w = $element.width();
+				var h = $element.height();
+
 				var size = currentBB.topright.subtract(currentBB.bottomleft);
-				var sx = p.subtract(currentBB.bottomleft).divide(size.x).x * $element.innerWidth();
-				var sy = p.subtract(currentBB.bottomleft).divide(size.y).y * $element.innerHeight();
+				var sx = p.subtract(currentBB.bottomleft).divide(size.x).x * w;
+				var sy = p.subtract(currentBB.bottomleft).divide(size.y).y * h;
 
 				return new Springy.Vector(sx, sy);
 			};
 
 			var fromScreen = function(s) {
+				var currentBB = layout.getBoundingBox();
+				var w = $element.width();
+				var h = $element.height();
+
 				var size = currentBB.topright.subtract(currentBB.bottomleft);
-				var px = (s.x / $element.innerWidth()) * size.x + currentBB.bottomleft.x;
-				var py = (s.y / $element.innerHeight()) * size.y + currentBB.bottomleft.y;
+				var px = (s.x / w) * size.x + currentBB.bottomleft.x;
+				var py = (s.y / h) * size.y + currentBB.bottomleft.y;
 
 				return new Springy.Vector(px, py);
 			};
-			
-			var currentBB = layout.getBoundingBox();
-			//var targetBB = {bottomleft: new Springy.Vector(-2, -2), topright: new Springy.Vector(2, 2)};
-			var targetBB = {bottomleft: new Springy.Vector(0, 0), topright: new Springy.Vector(1, 1)};
 
 			// create renderer
-			var renderer = graphConfig.renderer = $scope.renderer = new Springy.Renderer(layout,
+			var renderer = allGraphData.renderer = $scope.renderer = new Springy.Renderer(layout,
 				function clear() {
 				},
 
@@ -73,14 +77,25 @@
 						left: s.x - w/2,
 						top: s.y - h/2,
 					});
+
+					if (node.id == 2) {
+						console.log(p);
+					}
+
+					$scope.$digest();
 				}
 			);
 
 			renderer.start();
 
-			// update graphConfig model
-            $ngModelCtrl.$setViewValue(graphConfig);
+			// update allGraphData model
+            $ngModelCtrl.$setViewValue(allGraphData);
             $ngModelCtrl.$render();
+
+            // for some reason, need to $apply before changes become visible on the outside
+            setTimeout(function() {
+            	$scope.$apply();
+            })
 		}
 
 		function postLink($scope, $element, $attrs, $ngModelCtrl) {
