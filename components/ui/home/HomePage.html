@@ -23,4 +23,14 @@
 			{{edge}}
 		</springy-graph-edge>
 	</div>
+
+	<br />
+	<br />
+
+	<textarea id="text-input" ng-model="mdRaw" ng-change="mdUpdate()"
+		rows="6" cols="60"
+		placeholder="markdown here..."></textarea>
+    <div id="preview"
+    	style="background-color: lightgrey; min-height: 20px;">
+    </div>
 </div>

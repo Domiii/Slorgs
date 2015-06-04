@@ -47,6 +47,38 @@ module.exports = NoGapDef.component({
                 ThisComponent = this;
             },
 
+            // ####################################################
+            // data + data definitions
+
+            OwnerType: squishy.makeEnum({
+                All: 1,
+                Group: 2,
+                Individual: 3
+            }),
+
+            genTestData: function() {
+                var OwnerType = this.OwnerType;
+
+                this.LearningPathTemplates = [{
+                    title: 'Scratch: Getting started!',
+                    description: 'hello',
+                    isEnabled: true,
+                    ownerType: OwnerType.Individual,
+                    startTime: null,
+                    endTime: null,
+                    UsersWithAccess: [],
+                    GroupsWithAccess: [],
+                    TaskTemplates: [{
+                        title: '',
+
+                    }]
+                }];
+            },
+
+
+            // ####################################################
+            // setup GUI
+
             /**
              * Prepares the page controller
              */
@@ -54,6 +86,11 @@ module.exports = NoGapDef.component({
                 // create page controller
                 app.lazyController('homeCtrl', function($scope) {
                     UIMgr.registerPageScope(ThisComponent, $scope);
+
+                    $scope.mdUpdate = function() {
+                        var mdPreview = markdown.toHTML($scope.mdRaw || '');
+                        $('#preview').html(mdPreview);
+                    };
                     
                     // customize your $scope here:
                     $scope.nodes = [{

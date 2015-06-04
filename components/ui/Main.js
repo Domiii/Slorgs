@@ -59,7 +59,10 @@ module.exports = NoGapDef.component({
 
                     // springy (graph layouting + rendering)
                     'lib/springy/springy',
-                    'lib/springy/springy-angular'
+                    'lib/springy/springy-angular',
+
+                    'lib/markdown/markdown'
+                    //'lib/markdown/markdown.min'
                     
                 ],
                 css: [

@@ -65,7 +65,11 @@
 				},
 
 				function drawEdge(edge, p1, p2) {
+					var s1 = toScreen(p1);
+					var s2 = toScreen(p2);
 
+					// update arc info
+					var $arcEl = edge.data.$element;
 				},
 
 				function drawNode(node, p) {
@@ -79,10 +83,6 @@
 						left: s.x - w/2,
 						top: s.y - h/2,
 					});
-
-					if (node.id == 2) {
-						console.log(p);
-					}
 
 					$scope.$digest();
 				}
@@ -177,6 +177,13 @@
 				if (!from || !to) {
 					throw new Error('invalid  `springy-graph-edge` - invalid `from` or `to` node ids: ' + JSON.stringify(edgeAllData));
 				}
+
+				// TODO: Add jsPlumb!
+				// see: http://jsfiddle.net/wGjDm/7/
+				// see: http://jsfiddle.net/gXuS7/
+
+				// draw arc element
+				edgeData.$arcElement = $();
 
 				// add new edge
 				$scope._edge = $scope.graph.newEdge(from, to, edgeData);

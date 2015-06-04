@@ -539,13 +539,16 @@
 				render();
 			}
 
-			// stop simulation when energy of the system goes below a threshold
-			if (t._stop || t.totalEnergy() < t.minEnergyThreshold) {
-				// t._started = false;
-				// if (onRenderStop !== undefined) { onRenderStop(); }
-				// don't update immediately
+			if (t._stop) {
+				// simulation has been stopped
+				t._started = false;
+				if (onRenderStop !== undefined) { onRenderStop(); }
+			}
+			else if (t.totalEnergy() < t.minEnergyThreshold) {
+				// low-energy system does not need as many updates
 				setTimeout(requestTick, t.lowEnergyTickDelayMillis);
-			} else {
+			}
+			else {
 				// update immediately
 				requestTick();
 			}
