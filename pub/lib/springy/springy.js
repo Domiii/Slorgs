@@ -343,12 +343,13 @@
 
 	// -----------
 	var Layout = Springy.Layout = {};
-	Layout.ForceDirected = function(graph, stiffness, repulsion, damping, minEnergyThreshold) {
+	Layout.ForceDirected = function(graph, stiffness, repulsion, damping, minEnergyThreshold, lowEnergyTickDelayMillis) {
 		this.graph = graph;
 		this.stiffness = stiffness; // spring stiffness constant
 		this.repulsion = repulsion; // repulsion constant
 		this.damping = damping; // velocity damping factor
 		this.minEnergyThreshold = minEnergyThreshold || 0.01; //threshold used to determine render stop
+		this.lowEnergyTickDelayMillis = lowEnergyTickDelayMillis || 500;
 
 		this.nodePoints = {}; // keep track of points associated with nodes
 		this.edgeSprings = {}; // keep track of springs associated with edges
@@ -530,7 +531,8 @@
 
 		if (onRenderStart !== undefined) { onRenderStart(); }
 
-		Springy.requestAnimationFrame(function step() {
+
+		function step() {
 			t.tick(0.03);
 
 			if (render !== undefined) {
@@ -539,12 +541,21 @@
 
 			// stop simulation when energy of the system goes below a threshold
 			if (t._stop || t.totalEnergy() < t.minEnergyThreshold) {
-				t._started = false;
-				if (onRenderStop !== undefined) { onRenderStop(); }
+				// t._started = false;
+				// if (onRenderStop !== undefined) { onRenderStop(); }
+				// don't update immediately
+				setTimeout(requestTick, t.lowEnergyTickDelayMillis);
 			} else {
-				Springy.requestAnimationFrame(step);
+				// update immediately
+				requestTick();
 			}
-		});
+		}
+
+		function requestTick() {
+			Springy.requestAnimationFrame(step);
+		}
+
+		requestTick();
 	};
 
 	Layout.ForceDirected.prototype.stop = function() {

@@ -25,12 +25,14 @@
 			var repulsion = allGraphData.repulsion || 400.0;
 			var damping = allGraphData.damping || 0.5;
 			var minEnergyThreshold = allGraphData.minEnergyThreshold || 0.000001;
+			var lowEnergyTickDelayMillis = allGraphData.lowEnergyTickDelayMillis || 500;
 
 			// create new graph
 			var graph = allGraphData.graph = $scope.graph = new Springy.Graph();
 
             // create layout
-			var layout = allGraphData.layout = $scope.layout = new Springy.Layout.ForceDirected(graph, stiffness, repulsion, damping, minEnergyThreshold);
+			var layout = allGraphData.layout = $scope.layout = new Springy.Layout.ForceDirected(
+				graph, stiffness, repulsion, damping, minEnergyThreshold, lowEnergyTickDelayMillis);
 
 			// convert to/from screen coordinates
 			var toScreen = function(p) {
