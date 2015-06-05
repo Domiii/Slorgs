@@ -26,13 +26,14 @@
 			var stiffness = allGraphData.stiffness || 400.0;
 			var repulsion = allGraphData.repulsion || 400.0;
 			var damping = allGraphData.damping || 0.5;
-			var minEnergyThreshold = allGraphData.minEnergyThreshold || 0.000001;
+			var minEnergyThreshold = allGraphData.minEnergyThreshold || 0.0001;
 			var lowEnergyTickDelayMillis = allGraphData.lowEnergyTickDelayMillis || 500;
 
 
 			// ##########################################################################################
 			// create new jsPlumb instance
 
+			// see basic fiddle: http://jsfiddle.net/xkvzgj82/
 		    var plumbInstance = $scope._plumbInstance = jsPlumb.getInstance({
 		        // default drag options
 		        DragOptions: { cursor: 'pointer', zIndex: 2000 },
@@ -120,8 +121,11 @@
 						left: s.x - w/2,
 						top: s.y - h/2,
 					});
-
-					$scope.$digest();
+				},{
+					onAfterRender: function() {
+						$scope._plumbInstance.repaintEverything();
+						$scope.$digest();
+					}
 				}
 			);
 

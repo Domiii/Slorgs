@@ -525,27 +525,33 @@
 	 * Start simulation if it's not running already.
 	 * In case it's running then the call is ignored, and none of the callbacks passed is ever executed.
 	 */
-	Layout.ForceDirected.prototype.start = function(render, onRenderStop, onRenderStart) {
+	Layout.ForceDirected.prototype.start = function(render, renderHooks) {
 		var t = this;
 
 		if (this._started) return;
 		this._started = true;
 		this._stop = false;
 
-		if (onRenderStart !== undefined) { onRenderStart(); }
+		if (renderHooks && renderHooks.onRenderStart) { renderHooks.onRenderStart(); }
 
 
 		function step() {
 			t.tick(0.03);
 
 			if (render !== undefined) {
+				if (renderHooks && renderHooks.onBeforeRender) {
+					renderHooks.onBeforeRender();
+				}
 				render();
+				if (renderHooks && renderHooks.onAfterRender) {
+					renderHooks.onAfterRender();
+				}
 			}
 
 			if (t._stop) {
 				// simulation has been stopped
 				t._started = false;
-				if (onRenderStop !== undefined) { onRenderStop(); }
+				if (renderHooks && renderHooks.onRenderStop) { renderHooks.onRenderStop(); }
 			}
 			else if (t.totalEnergy() < t.minEnergyThreshold) {
 				// low-energy system does not need as many updates
@@ -689,16 +695,13 @@
 
 	/**
 	 * Renderer handles the layout rendering loop
-	 * @param onRenderStop optional callback function that gets executed whenever rendering stops.
-	 * @param onRenderStart optional callback function that gets executed whenever rendering starts.
 	 */
-	var Renderer = Springy.Renderer = function(layout, clear, drawEdge, drawNode, onRenderStop, onRenderStart) {
+	var Renderer = Springy.Renderer = function(layout, clear, drawEdge, drawNode, renderHooks) {
 		this.layout = layout;
 		this.clear = clear;
 		this.drawEdge = drawEdge;
 		this.drawNode = drawNode;
-		this.onRenderStop = onRenderStop;
-		this.onRenderStart = onRenderStart;
+		this.renderHooks = renderHooks;
 
 		this.layout.graph.addGraphListener(this);
 	}
@@ -729,7 +732,7 @@
 			t.layout.eachNode(function(node, point) {
 				t.drawNode(node, point.p);
 			});
-		}, this.onRenderStop, this.onRenderStart);
+		}, this.renderHooks);
 	};
 
 	Renderer.prototype.stop = function() {
