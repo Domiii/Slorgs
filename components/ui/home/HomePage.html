@@ -3,25 +3,26 @@
 	<br />
 	<br />
 	<br />
-	<div springy-graph ng-model="PC.allGraphData"
+	<div flexgraph ng-model="PC.allGraphData"
 		ng-style="{
 			'background-color': 'black',
 			width: '100%',
 			height: '400px'
 		}">
 
-		<div springy-graph-node ng-repeat="node in nodes"
+		<div flexgraph-node ng-repeat="node in nodes"
+			id="{{node.id}}"
 			ng-model="node"
 			code="p = PC.allGraphData.layout.getPoint(node.id).p;"
 			style="background-color: lightGrey">
-			{{node.id}}:
-			{{ [p.x.toFixed(2), p.y.toFixed(2)] }}
+			node #{{node.id}}
+			<!-- {{ [p.x.toFixed(2), p.y.toFixed(2)] }} -->
 		</div>
 
-		<springy-graph-edge ng-repeat="edge in edges"
+		<flexgraph-edge ng-repeat="edge in edges"
 			ng-model="edge">
-			{{edge}}
-		</springy-graph-edge>
+			<!-- {{edge}} -->
+		</flexgraph-edge>
 	</div>
 
 	<br />

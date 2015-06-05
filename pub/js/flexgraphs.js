@@ -1,17 +1,19 @@
 /**
- * Angular-bindings for Springy.js
+ * Directives for responsive, editable graphs
  */
 
 (function(global, angular, undefined) {
 	"use strict";
-	if (!global.Springy) throw new Error('Springy not found. Make sure to initialize springy.js before springy-angular.js');
+	if (!global.Springy) throw new Error('Springy not found. Make sure to initialize springy.js before flexgraphs.js');
+	if (!global.jsPlumb) throw new Error('jsPlumb not found. Make sure to initialize jsPlumb before flexgraphs.js');
 
-	angular.module('springyjs', [])
+	angular.module('flexgraphs', [])
+
 
 	/**
-	 * springy-graph directive
+	 * flexgraph directive
 	 */
-	.directive('springyGraph', [function() {
+	.directive('flexgraph', [function() {
 		function preLink($scope, $element, $attrs, $ngModelCtrl) {
 			$element.css({
 				'position': 'relative'
@@ -27,7 +29,42 @@
 			var minEnergyThreshold = allGraphData.minEnergyThreshold || 0.000001;
 			var lowEnergyTickDelayMillis = allGraphData.lowEnergyTickDelayMillis || 500;
 
-			// create new graph
+
+			// ##########################################################################################
+			// create new jsPlumb instance
+
+		    var plumbInstance = $scope._plumbInstance = jsPlumb.getInstance({
+		        // default drag options
+		        DragOptions: { cursor: 'pointer', zIndex: 2000 },
+
+		        // the overlays to decorate each connection with.  note that the label overlay uses a function to generate the label text; in this
+		        // case it returns the 'labelText' member that we set on each connection in the 'init' method below.
+		        ConnectionOverlays: [
+		            [ "Arrow", { location: 1 } ],
+		            [ "Label", {
+		                location: 0.1,
+		                id: "label",
+		                cssClass: "aLabel"
+		            }]
+		        ],
+		        Container: $element
+		    });
+
+			var basicType = {
+		        connector:"StateMachine",
+		        paintStyle:{lineWidth:3,strokeStyle:"#056"},
+		        hoverPaintStyle:{strokeStyle:"#dbe300"},
+		        endpoint:"Blank",
+		        anchor:"Continuous",
+		        overlays:[ ["PlainArrow", {location:1, width:15, length:12} ]]
+		    };
+
+	        plumbInstance.registerConnectionType("basic", basicType);
+
+
+			// ##########################################################################################
+			// create springy instance
+
 			var graph = allGraphData.graph = $scope.graph = new Springy.Graph();
 
             // create layout
@@ -116,12 +153,13 @@
       	};
     }])
 
+
 	/**
-	 * springy-graph-node directive
+	 * flexgraph-node directive
 	 */
-	.directive('springyGraphNode', [function() {
+	.directive('flexgraphNode', [function() {
 		function linkFun($scope, $element, $attrs, $ngModelCtrl) {
-			console.assert($scope.graph, 'invalid `springy-graph-node` - must be placed inside `springy-graph` element');
+			console.assert($scope.graph, 'invalid `flexgraph-node` - must be placed inside `flexgraph` element');
 
 			function doInit() {
 				if (!$ngModelCtrl.$modelValue || $scope._node) return;
@@ -129,10 +167,15 @@
 				var allNodeData = $ngModelCtrl.$modelValue = $ngModelCtrl.$modelValue || {};
 
 				// add new node
+				var id = $element.attr('id');
+				if (!id) {
+					throw new Error('invalid `flexgraph-node` - does not have an id set');
+				}
+
 				var nodeData = allNodeData.data = allNodeData.data || {};
 				nodeData.$element = $element;
 
-				$scope._node = new Springy.Node(allNodeData.id, nodeData);
+				$scope._node = new Springy.Node(id, nodeData);
 				$scope.graph.addNode($scope._node);
 
 				$element.css({
@@ -156,36 +199,42 @@
       	};
     }])
 
+
 	/**
-	 * springy-graph-edge directive
+	 * flexgraph-edge directive
 	 */
-	.directive('springyGraphEdge', [function() {
+	.directive('flexgraphEdge', [function() {
 		function linkFun($scope, $element, $attrs, $ngModelCtrl) {
-			console.assert($scope.graph, 'invalid `springy-graph-edge` - must be placed inside `springy-graph` element');
+			console.assert($scope.graph, 'invalid `flexgraph-edge` - must be placed inside `flexgraph` element');
 
 			$scope.$watch($ngModelCtrl, function(val) {
 				if (!$ngModelCtrl.$modelValue || $scope._edge) return;
 
 				var edgeAllData = $ngModelCtrl.$modelValue = $ngModelCtrl.$modelValue;
 				console.assert(edgeAllData && edgeAllData.from && edgeAllData.to, 
-					'invalid  `springy-graph-edge` - must have `ng-model` attribute, containing at least `from` and `to` (node ids): ' + 
+					'invalid  `flexgraph-edge` - must have `ng-model` attribute, containing at least `from` and `to` (node ids): ' + 
 					JSON.stringify(edgeAllData));
 
 				var edgeData = edgeAllData.data || {};
 				var from = $scope.graph.getNode(edgeAllData.from);
 				var to = $scope.graph.getNode(edgeAllData.to);
+
 				if (!from || !to) {
-					throw new Error('invalid  `springy-graph-edge` - invalid `from` or `to` node ids: ' + JSON.stringify(edgeAllData));
+					throw new Error('invalid  `flexgraph-edge` - invalid `from` or `to` node ids: ' + JSON.stringify(edgeAllData));
 				}
+
+				$scope._plumbInstance.connect({
+					//source: edgeAllData.from.toString(),
+					source: from.data.$element,
+					target: to.data.$element,
+					type: 'basic'
+				});
 
 				// TODO: Add jsPlumb!
 				// see: http://jsfiddle.net/wGjDm/7/
 				// see: http://jsfiddle.net/gXuS7/
 
-				// draw arc element
-				edgeData.$arcElement = $();
-
-				// add new edge
+				// add new springy edge
 				$scope._edge = $scope.graph.newEdge(from, to, edgeData);
 
 				$scope.$on('destroy', function() {

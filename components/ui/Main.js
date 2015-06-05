@@ -56,14 +56,15 @@ module.exports = NoGapDef.component({
                     'js/DomUtil',
                     'js/angular_ui/timespan-picker',
                     
+                    'lib/markdown/markdown',
+                    //'lib/markdown/markdown.min'
 
                     // springy (graph layouting + rendering)
                     'lib/springy/springy',
-                    'lib/springy/springy-angular',
 
-                    'lib/markdown/markdown'
-                    //'lib/markdown/markdown.min'
-                    
+                    'lib/jsplumb/jsPlumb-1.7.5',
+
+                    'js/flexgraphs'
                 ],
                 css: [
                     // bootstrap & font-awesome make things look pretty
@@ -559,7 +560,7 @@ module.exports = NoGapDef.component({
                 var includeModules = [
                     'ui.bootstrap',
                     'timespanPicker',
-                    'springyjs'
+                    'flexgraphs'
                 ];
                 var angularApp = angular.module('app', includeModules);
 
