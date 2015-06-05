@@ -64,7 +64,8 @@ module.exports = NoGapDef.component({
 
                     'lib/jsplumb/jsPlumb-1.7.5',
 
-                    'js/flexgraphs'
+                    // flexgraph
+                    'js/flexgraph/flexgraph'
                 ],
                 css: [
                     // bootstrap & font-awesome make things look pretty
@@ -78,6 +79,9 @@ module.exports = NoGapDef.component({
                      * @see http://necolas.github.io/normalize.css/
                      */
                     'lib/normalize.css',
+
+                    // flexgraph default styles
+                    'js/flexgraph/flexgraph',
 
                     // our custom styles
                     'css/styles.css'

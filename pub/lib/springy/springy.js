@@ -548,14 +548,13 @@
 				}
 			}
 
-			if (t._stop) {
+			//t._hasLowEnergy = 
+			var hasLowEnergy = t.totalEnergy() < t.minEnergyThreshold;
+
+			if (t._stop || hasLowEnergy) {
 				// simulation has been stopped
 				t._started = false;
 				if (renderHooks && renderHooks.onRenderStop) { renderHooks.onRenderStop(); }
-			}
-			else if (t.totalEnergy() < t.minEnergyThreshold) {
-				// low-energy system does not need as many updates
-				setTimeout(requestTick, t.lowEnergyTickDelayMillis);
 			}
 			else {
 				// update immediately

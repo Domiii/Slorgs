@@ -1,0 +1,23 @@
+/**
+ * @see http://www.jsplumb.org/doc/styling-via-css.html
+ */
+
+.flexgraph {
+	position: relative;
+	background-color: black;
+	width: 100%;
+	height: 600px;
+}
+
+ .flexgraph-node {
+ 	position: absolute;
+ 	background-color: #CCC;
+ }
+
+ .flexgraph-connector {
+ 	color: red;
+ }
+
+ .flexgraph-endpoint {
+ 	display: none;
+ }

@@ -15,9 +15,7 @@
 	 */
 	.directive('flexgraph', [function() {
 		function preLink($scope, $element, $attrs, $ngModelCtrl) {
-			$element.css({
-				'position': 'relative'
-			});
+			$element.addClass('flexgraph');
 
 
 			// get graph settings
@@ -48,8 +46,12 @@
 		                cssClass: "aLabel"
 		            }]
 		        ],
-		        Container: $element
+		        Container: $element,
 		    });
+
+		    // need to set css classes after ctor (bug in API)
+		    plumbInstance.connectorClass = 'flexgraph-connector';
+		    plumbInstance.endpointClass = 'flexgraph-endpoint';
 
 			var basicType = {
 		        connector:"StateMachine",
@@ -182,9 +184,12 @@
 				$scope._node = new Springy.Node(id, nodeData);
 				$scope.graph.addNode($scope._node);
 
-				$element.css({
-					'position': 'absolute'
+
+			    $scope._plumbInstance.makeSource($element, {
+				    anchor:["Continuous", { faces:[ "bottom" ] } ]
 				});
+
+				$element.addClass('flexgraph-node');
 
 				$scope.$on('destroy', function() {
 					// remove node
@@ -227,11 +232,16 @@
 					throw new Error('invalid  `flexgraph-edge` - invalid `from` or `to` node ids: ' + JSON.stringify(edgeAllData));
 				}
 
+				// TODO: Restrict anchors to "bottom-to-top" only
+				// see: https://jsplumbtoolkit.com/demo/dynamicAnchors/demo.js
+
 				$scope._plumbInstance.connect({
 					//source: edgeAllData.from.toString(),
 					source: from.data.$element,
 					target: to.data.$element,
-					type: 'basic'
+					type: 'basic',
+					anchor: [ [ 0.2, 0, 0, -1 ],  [ 1, 0.2, 1, 0 ], 
+               					"Top", "Bottom" ]
 				});
 
 				// TODO: Add jsPlumb!
