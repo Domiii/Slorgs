@@ -24,7 +24,9 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
+
 (function (root, factory) {
+ 	"use strict";
     if (typeof define === 'function' && define.amd) {
         // AMD. Register as an anonymous module.
         define(function () {
@@ -158,6 +160,11 @@
 	};
 
 
+	Graph.prototype.getNode = function(nodeId) {
+		return this.nodeSet[nodeId];
+	};
+
+
 	// add nodes and edges from JSON object
 	Graph.prototype.loadJSON = function(json) {
 	/**
@@ -195,23 +202,33 @@
 
 
 	// find the edges from node1 to node2
-	Graph.prototype.getEdges = function(node1, node2) {
-		if (node1.id in this.adjacency
-			&& node2.id in this.adjacency[node1.id]) {
-			return this.adjacency[node1.id][node2.id];
+	Graph.prototype.getEdges = function(nodeOrId1, nodeOrId2) {
+		var nodeId1 = isNaN(nodeOrId1) ? nodeOrId1.id : nodeOrId1;
+		//var node1 = this.nodeSet[nodeId1];
+
+		var nodeId2 = isNaN(nodeOrId2) ? nodeOrId2.id : nodeOrId2;
+		//var node2 = this.nodeSet[nodeId2];
+
+		if (nodeId1 in this.adjacency
+			&& nodeId2 in this.adjacency[nodeId1]) {
+			return this.adjacency[nodeId1][nodeId2];
 		}
 
 		return [];
 	};
 
 	// remove a node and it's associated edges from the graph
-	Graph.prototype.removeNode = function(node) {
-		if (node.id in this.nodeSet) {
-			delete this.nodeSet[node.id];
+	Graph.prototype.removeNode = function(nodeOrId) {
+		var nodeId = isNaN(nodeOrId) ? nodeOrId.id : nodeOrId;
+		var node = this.nodeSet[nodeId];
+		console.assert(node, 'invalid `nodeOrId`: ' + nodeOrId);
+
+		if (nodeId in this.nodeSet) {
+			delete this.nodeSet[nodeId];
 		}
 
 		for (var i = this.nodes.length - 1; i >= 0; i--) {
-			if (this.nodes[i].id === node.id) {
+			if (this.nodes[i].id === nodeId) {
 				this.nodes.splice(i, 1);
 			}
 		}
@@ -327,12 +344,13 @@
 
 	// -----------
 	var Layout = Springy.Layout = {};
-	Layout.ForceDirected = function(graph, stiffness, repulsion, damping, minEnergyThreshold) {
+	Layout.ForceDirected = function(graph, stiffness, repulsion, damping, minEnergyThreshold, lowEnergyTickDelayMillis) {
 		this.graph = graph;
 		this.stiffness = stiffness; // spring stiffness constant
 		this.repulsion = repulsion; // repulsion constant
 		this.damping = damping; // velocity damping factor
 		this.minEnergyThreshold = minEnergyThreshold || 0.01; //threshold used to determine render stop
+		this.lowEnergyTickDelayMillis = lowEnergyTickDelayMillis || 500;
 
 		this.nodePoints = {}; // keep track of points associated with nodes
 		this.edgeSprings = {}; // keep track of springs associated with edges
@@ -341,10 +359,14 @@
 	Layout.ForceDirected.prototype.point = function(node) {
 		if (!(node.id in this.nodePoints)) {
 			var mass = (node.data.mass !== undefined) ? node.data.mass : 1.0;
-			this.nodePoints[node.id] = new Layout.ForceDirected.Point(Vector.random(), mass);
+			this.nodePoints[node.id] = new Layout.ForceDirected.Point(node.data.initialPosition || Vector.random(), mass);
 		}
 
 		return this.nodePoints[node.id];
+	};
+
+	Layout.ForceDirected.prototype.getPoint = function(nodeId) {
+		return this.nodePoints[nodeId];
 	};
 
 	Layout.ForceDirected.prototype.spring = function(edge) {
@@ -361,7 +383,8 @@
 			}, this);
 
 			if (existingSpring !== false) {
-				return new Layout.ForceDirected.Spring(existingSpring.point1, existingSpring.point2, 0.0, 0.0);
+				return new Layout.ForceDirected.Spring(
+					edge.source.data.isStatic, edge.target.data.isStatic, existingSpring.point1, existingSpring.point2, 0.0, 0.0);
 			}
 
 			var to = this.graph.getEdges(edge.target, edge.source);
@@ -372,10 +395,12 @@
 			}, this);
 
 			if (existingSpring !== false) {
-				return new Layout.ForceDirected.Spring(existingSpring.point2, existingSpring.point1, 0.0, 0.0);
+				return new Layout.ForceDirected.Spring(
+					edge.target.data.isStatic, edge.source.data.isStatic, existingSpring.point2, existingSpring.point1, 0.0, 0.0);
 			}
 
 			this.edgeSprings[edge.id] = new Layout.ForceDirected.Spring(
+				edge.source.data.isStatic, edge.target.data.isStatic,
 				this.point(edge.source), this.point(edge.target), length, this.stiffness
 			);
 		}
@@ -419,8 +444,12 @@
 					var direction = d.normalise();
 
 					// apply force to each end point
-					point1.applyForce(direction.multiply(this.repulsion).divide(distance * distance * 0.5));
-					point2.applyForce(direction.multiply(this.repulsion).divide(distance * distance * -0.5));
+					if (!n1.data.isStatic) {
+						point1.applyForce(direction.multiply(this.repulsion).divide(distance * distance * 0.5));
+					}
+					if (!n2.data.isStatic) {
+						point2.applyForce(direction.multiply(this.repulsion).divide(distance * distance * -0.5));
+					}
 				}
 			});
 		});
@@ -433,15 +462,21 @@
 			var direction = d.normalise();
 
 			// apply force to each end point
-			spring.point1.applyForce(direction.multiply(spring.k * displacement * -0.5));
-			spring.point2.applyForce(direction.multiply(spring.k * displacement * 0.5));
+			if (!spring.isPoint1Static) {
+				spring.point1.applyForce(direction.multiply(spring.k * displacement * -0.5));
+			}
+			if (!spring.isPoint2Static) {
+				spring.point2.applyForce(direction.multiply(spring.k * displacement * 0.5));
+			}
 		});
 	};
 
 	Layout.ForceDirected.prototype.attractToCentre = function() {
 		this.eachNode(function(node, point) {
-			var direction = point.p.multiply(-1.0);
-			point.applyForce(direction.multiply(this.repulsion / 50.0));
+			if (!node.data.isStatic && !node.data.dontAttractToCenter) {
+				var direction = point.p.multiply(-1.0);
+				point.applyForce(direction.multiply(this.repulsion / 50.0));
+			}
 		});
 	};
 
@@ -499,21 +534,34 @@
 
 		if (onRenderStart !== undefined) { onRenderStart(); }
 
-		Springy.requestAnimationFrame(function step() {
+
+		function step() {
 			t.tick(0.03);
 
 			if (render !== undefined) {
 				render();
 			}
 
-			// stop simulation when energy of the system goes below a threshold
-			if (t._stop || t.totalEnergy() < t.minEnergyThreshold) {
+			if (t._stop) {
+				// simulation has been stopped
 				t._started = false;
 				if (onRenderStop !== undefined) { onRenderStop(); }
-			} else {
-				Springy.requestAnimationFrame(step);
 			}
-		});
+			else if (t.totalEnergy() < t.minEnergyThreshold) {
+				// low-energy system does not need as many updates
+				setTimeout(requestTick, t.lowEnergyTickDelayMillis);
+			}
+			else {
+				// update immediately
+				requestTick();
+			}
+		}
+
+		function requestTick() {
+			Springy.requestAnimationFrame(step);
+		}
+
+		requestTick();
 	};
 
 	Layout.ForceDirected.prototype.stop = function() {
@@ -621,7 +669,9 @@
 	};
 
 	// Spring
-	Layout.ForceDirected.Spring = function(point1, point2, length, k) {
+	Layout.ForceDirected.Spring = function(isPoint1Static, isPoint2Static, point1, point2, length, k) {
+		this.isPoint1Static = isPoint1Static;
+		this.isPoint2Static = isPoint2Static;
 		this.point1 = point1;
 		this.point2 = point2;
 		this.length = length; // spring length at rest
@@ -724,4 +774,4 @@
 	};
 
   return Springy;
-}));
+}.bind(this)));

@@ -19,7 +19,7 @@ module.exports = NoGapDef.component({
                 AutoIncludes: {
                     js: [
                         // jQuery
-                        'lib/jquery/jquery-2.1.0.min.js',
+                        'lib/jquery/jquery-2.1.4.js',
                         'lib/jquery-ui/jquery-ui.min.js',
 
                         // Angular JS

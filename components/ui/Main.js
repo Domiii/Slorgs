@@ -55,8 +55,16 @@ module.exports = NoGapDef.component({
                     // some DOM + UI utilities
                     'js/DomUtil',
                     'js/angular_ui/timespan-picker',
-                    // Array utilities
                     
+                    'lib/markdown/markdown',
+                    //'lib/markdown/markdown.min'
+
+                    // springy (graph layouting + rendering)
+                    'lib/springy/springy',
+
+                    'lib/jsplumb/jsPlumb-1.7.5',
+
+                    'js/flexgraphs'
                 ],
                 css: [
                     // bootstrap & font-awesome make things look pretty
@@ -551,7 +559,8 @@ module.exports = NoGapDef.component({
                 // Added modules:
                 var includeModules = [
                     'ui.bootstrap',
-                    'timespanPicker'
+                    'timespanPicker',
+                    'flexgraphs'
                 ];
                 var angularApp = angular.module('app', includeModules);
 
@@ -561,6 +570,11 @@ module.exports = NoGapDef.component({
                 // add some general functions and objects to $rootScope
                 angularApp.run(['$rootScope', function($rootScope) {
                     var localizer = Instance.Localizer.Default;
+
+                    // JS core functions
+                    $rootScope.Math = Math;
+                    $rootScope.JSON = JSON;
+                    $rootScope.Date = Date;
 
                     // localize
                     $rootScope.localize = localizer.lookUp.bind(localizer);

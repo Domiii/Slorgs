@@ -1,3 +1,37 @@
 <div class="fill container-page" ng-controller="homeCtrl">
-	
+	<br />
+	<br />
+	<br />
+	<br />
+	<div flexgraph ng-model="PC.allGraphData"
+		ng-style="{
+			'background-color': 'black',
+			width: '100%',
+			height: '400px'
+		}">
+
+		<div flexgraph-node ng-repeat="node in nodes"
+			id="{{node.id}}"
+			ng-model="node"
+			code="p = PC.allGraphData.layout.getPoint(node.id).p;"
+			style="background-color: lightGrey">
+			node #{{node.id}}
+			<!-- {{ [p.x.toFixed(2), p.y.toFixed(2)] }} -->
+		</div>
+
+		<flexgraph-edge ng-repeat="edge in edges"
+			ng-model="edge">
+			<!-- {{edge}} -->
+		</flexgraph-edge>
+	</div>
+
+	<br />
+	<br />
+
+	<textarea id="text-input" ng-model="mdRaw" ng-change="mdUpdate()"
+		rows="6" cols="60"
+		placeholder="markdown here..."></textarea>
+    <div id="preview"
+    	style="background-color: lightgrey; min-height: 20px;">
+    </div>
 </div>
