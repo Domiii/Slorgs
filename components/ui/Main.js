@@ -64,8 +64,8 @@ module.exports = NoGapDef.component({
 
                     'lib/jsplumb/jsPlumb-1.7.5',
 
-                    // flexgraph
-                    'js/flexgraph/flexgraph'
+                    // learningpath
+                    'js/learningpath/learningpath'
                 ],
                 css: [
                     // bootstrap & font-awesome make things look pretty
@@ -80,8 +80,8 @@ module.exports = NoGapDef.component({
                      */
                     'lib/normalize.css',
 
-                    // flexgraph default styles
-                    'js/flexgraph/flexgraph',
+                    // learningpath default styles
+                    'js/learningpath/learningpath',
 
                     // our custom styles
                     'css/styles.css'
@@ -105,6 +105,9 @@ module.exports = NoGapDef.component({
                     'RuntimeError',
                     'AppConfig', 
                     'User',
+
+                    // application stuff
+                    'LearningPathTemplate',
 
                     // utilities
                     'CacheUtil',
@@ -564,7 +567,7 @@ module.exports = NoGapDef.component({
                 var includeModules = [
                     'ui.bootstrap',
                     'timespanPicker',
-                    'flexgraphs'
+                    'learningpaths'
                 ];
                 var angularApp = angular.module('app', includeModules);
 

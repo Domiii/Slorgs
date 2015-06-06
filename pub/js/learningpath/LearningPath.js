@@ -4,18 +4,18 @@
 
 (function(global, angular, undefined) {
 	"use strict";
-	if (!global.Springy) throw new Error('Springy not found. Make sure to initialize springy.js before flexgraphs.js');
-	if (!global.jsPlumb) throw new Error('jsPlumb not found. Make sure to initialize jsPlumb before flexgraphs.js');
+	if (!global.Springy) throw new Error('Springy not found. Make sure to initialize springy.js before learningpaths.js');
+	if (!global.jsPlumb) throw new Error('jsPlumb not found. Make sure to initialize jsPlumb before learningpaths.js');
 
-	angular.module('flexgraphs', [])
+	angular.module('learningpaths', [])
 
 
 	/**
-	 * flexgraph directive
+	 * learningpath directive
 	 */
-	.directive('flexgraph', [function() {
+	.directive('learningpath', [function() {
 		function preLink($scope, $element, $attrs, $ngModelCtrl) {
-			$element.addClass('flexgraph');
+			$element.addClass('learningpath');
 
 
 			// get graph settings
@@ -50,8 +50,10 @@
 		    });
 
 		    // need to set css classes after ctor (bug in API)
-		    plumbInstance.connectorClass = 'flexgraph-connector';
-		    plumbInstance.endpointClass = 'flexgraph-endpoint';
+		    plumbInstance.connectorClass = 'learningpath-connector';
+		    plumbInstance.endpointClass = 'learningpath-endpoint';
+		    plumbInstance.endpointFullClass = 'learningpath-endpoint-full';
+		    plumbInstance.overlayClass = 'learningpath-overlay';
 
 			var basicType = {
 		        connector:"StateMachine",
@@ -161,11 +163,11 @@
 
 
 	/**
-	 * flexgraph-node directive
+	 * learningpath-node directive
 	 */
-	.directive('flexgraphNode', [function() {
+	.directive('learningpathNode', [function() {
 		function linkFun($scope, $element, $attrs, $ngModelCtrl) {
-			console.assert($scope.graph, 'invalid `flexgraph-node` - must be placed inside `flexgraph` element');
+			console.assert($scope.graph, 'invalid `learningpath-node` - must be placed inside `learningpath` element');
 
 			function doInit() {
 				if (!$ngModelCtrl.$modelValue || $scope._node) return;
@@ -175,7 +177,7 @@
 				// add new node
 				var id = $element.attr('id');
 				if (!id) {
-					throw new Error('invalid `flexgraph-node` - does not have an id set');
+					throw new Error('invalid `learningpath-node` - does not have an id set');
 				}
 
 				var nodeData = allNodeData.data = allNodeData.data || {};
@@ -189,7 +191,7 @@
 				    anchor:["Continuous", { faces:[ "bottom" ] } ]
 				});
 
-				$element.addClass('flexgraph-node');
+				$element.addClass('learningpath-node');
 
 				$scope.$on('destroy', function() {
 					// remove node
@@ -210,18 +212,18 @@
 
 
 	/**
-	 * flexgraph-edge directive
+	 * learningpath-edge directive
 	 */
-	.directive('flexgraphEdge', [function() {
+	.directive('learningpathEdge', [function() {
 		function linkFun($scope, $element, $attrs, $ngModelCtrl) {
-			console.assert($scope.graph, 'invalid `flexgraph-edge` - must be placed inside `flexgraph` element');
+			console.assert($scope.graph, 'invalid `learningpath-edge` - must be placed inside `learningpath` element');
 
 			$scope.$watch($ngModelCtrl, function(val) {
 				if (!$ngModelCtrl.$modelValue || $scope._edge) return;
 
 				var edgeAllData = $ngModelCtrl.$modelValue = $ngModelCtrl.$modelValue;
 				console.assert(edgeAllData && edgeAllData.from && edgeAllData.to, 
-					'invalid  `flexgraph-edge` - must have `ng-model` attribute, containing at least `from` and `to` (node ids): ' + 
+					'invalid  `learningpath-edge` - must have `ng-model` attribute, containing at least `from` and `to` (node ids): ' + 
 					JSON.stringify(edgeAllData));
 
 				var edgeData = edgeAllData.data || {};
@@ -229,7 +231,7 @@
 				var to = $scope.graph.getNode(edgeAllData.to);
 
 				if (!from || !to) {
-					throw new Error('invalid  `flexgraph-edge` - invalid `from` or `to` node ids: ' + JSON.stringify(edgeAllData));
+					throw new Error('invalid  `learningpath-edge` - invalid `from` or `to` node ids: ' + JSON.stringify(edgeAllData));
 				}
 
 				// TODO: Restrict anchors to "bottom-to-top" only
@@ -239,9 +241,7 @@
 					//source: edgeAllData.from.toString(),
 					source: from.data.$element,
 					target: to.data.$element,
-					type: 'basic',
-					anchor: [ [ 0.2, 0, 0, -1 ],  [ 1, 0.2, 1, 0 ], 
-               					"Top", "Bottom" ]
+					type: 'basic'
 				});
 
 				// TODO: Add jsPlumb!

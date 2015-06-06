@@ -3,11 +3,11 @@
 	<br />
 	<br />
 	<br />
-	<div flexgraph ng-model="PC.allGraphData"
+	<div learningpath ng-model="PC.allGraphData"
 		ng-style="{
 		}">
 
-		<div flexgraph-node ng-repeat="node in nodes"
+		<div learningpath-node ng-repeat="node in nodes"
 			id="{{node.id}}"
 			ng-model="node"
 			code="p = PC.allGraphData.layout.getPoint(node.id).p;">
@@ -15,10 +15,10 @@
 			<!-- {{ [p.x.toFixed(2), p.y.toFixed(2)] }} -->
 		</div>
 
-		<flexgraph-edge ng-repeat="edge in edges"
+		<learningpath-edge ng-repeat="edge in edges"
 			ng-model="edge">
 			<!-- {{edge}} -->
-		</flexgraph-edge>
+		</learningpath-edge>
 	</div>
 
 	<br />

@@ -147,6 +147,7 @@ module.exports = {
             'util/CacheUtil',
 
             // core components
+            'models/learningpaths/LearningPathTemplate',
             'models/core/AppConfig',
             'models/core/User',
 

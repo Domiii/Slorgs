@@ -1,4 +1,3 @@
-
 /**
  * All utilities required to verify and manage users.
  * TODO: Separate Account + User management
@@ -6,12 +5,6 @@
 "use strict";
 
 var NoGapDef = require('nogap').Def;
-
-
-var componentsRoot = '../../';
-var appRoot = componentsRoot + '../';
-var libRoot = appRoot + 'lib/';
-var pubRoot = appRoot + 'pub/';
 
 
 module.exports = NoGapDef.component({
@@ -210,6 +203,11 @@ module.exports = NoGapDef.component({
     }),
 
     Host: NoGapDef.defHost(function(SharedTools, Shared, SharedContext) {
+        var componentsRoot,
+            appRoot,
+            libRoot,
+            pubRoot;
+
         var UserModel;
         var UserRole;
 
@@ -225,6 +223,11 @@ module.exports = NoGapDef.component({
 
         return {
             __ctor: function () {
+                componentsRoot = '../../';
+                appRoot = componentsRoot + '../';
+                libRoot = appRoot + 'lib/';
+                pubRoot = appRoot + 'pub/';
+
                 SequelizeUtil = require(libRoot + 'SequelizeUtil');
                 TokenStore = require(libRoot + 'TokenStore');
                 bcrypt = require(pubRoot + 'lib/bcrypt');

@@ -47,34 +47,6 @@ module.exports = NoGapDef.component({
                 ThisComponent = this;
             },
 
-            // ####################################################
-            // data + data definitions
-
-            OwnerType: squishy.makeEnum({
-                All: 1,
-                Group: 2,
-                Individual: 3
-            }),
-
-            genTestData: function() {
-                var OwnerType = this.OwnerType;
-
-                this.LearningPathTemplates = [{
-                    title: 'Scratch: Getting started!',
-                    description: 'hello',
-                    isEnabled: true,
-                    ownerType: OwnerType.Individual,
-                    startTime: null,
-                    endTime: null,
-                    UsersWithAccess: [],
-                    GroupsWithAccess: [],
-                    TaskTemplates: [{
-                        title: '',
-
-                    }]
-                }];
-            },
-
 
             // ####################################################
             // setup GUI
@@ -93,6 +65,8 @@ module.exports = NoGapDef.component({
                     };
                     
                     // customize your $scope here:
+                    $scope.LearningPathTemplates = Instance.LearningPathTemplate.TestTemplates;
+
                     $scope.nodes = [{
                         id: 1,
                         data: {
