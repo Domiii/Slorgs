@@ -26,25 +26,57 @@ module.exports = NoGapDef.component({
 
             Private: {
             	__ctor: function() {
+                    this.LearningPathTemplates = {
+                        list: [],
+                        byId: {}
+                    };
+
             		this.genTestData();
             	},
 
-            	createLearningPathTemplate: function(templateDef) {
+            	createLearningPathTemplate: function(lpTemplateDef) {
             		// simulate DB insertion
-            		templateDef.learningPathTemplateId = ++lastId;
+            		lpTemplateDef.learningPathTemplateId = ++lastId;
 
-            		if (templateDef.TaskTemplates) {
-            			var taskTemplates = templateDef.TaskTemplates;
-            			//delete templateDef.TaskTemplates;
+            		if (lpTemplateDef.TaskTemplates) {
+            			var taskTemplates = lpTemplateDef.TaskTemplates;
+                        var taskTemplatesById = {};
+            			//delete lpTemplateDef.TaskTemplates;
 
-            			for (var i = 0; i < taskTemplates.length; ++i) {
-            				var taskTemplate = taskTemplates[i];
-            				//taskTemplate.taskTemplateId = ++lastId;
-            				taskTemplate.learningPathTemplateId = templateDef.learningPathTemplateId;
-            			}
+                        // prepare all TaskTemplates
+                        for (var iTaskTemplate = 0; iTaskTemplate < taskTemplates.length; ++iTaskTemplate) {
+                            var taskTemplate = taskTemplates[iTaskTemplate];
+                            taskTemplatesById[taskTemplate.taskTemplateId] = taskTemplate;
+                            //taskTemplate.taskTemplateId = ++lastId;
+
+                            taskTemplate.learningPathTemplateId = lpTemplateDef.learningPathTemplateId;
+                        }
+
+                        // prepare adjacency list for task dependency graph
+                        lpTemplateDef.taskDependencyEdges = [];
+                        for (var iTaskTemplate = 0; iTaskTemplate < taskTemplates.length; ++iTaskTemplate) {
+                            var taskTemplate = taskTemplates[iTaskTemplate];
+                            if (taskTemplate.requiredTaskIds) {
+                                for (var iTaskId = 0; iTaskId < taskTemplate.requiredTaskIds.length; ++iTaskId) {
+                                    var requiredTaskId = taskTemplate.requiredTaskIds[iTaskId];
+                                    lpTemplateDef.taskDependencyEdges.push({
+                                        from: requiredTaskId,
+                                        to: taskTemplate.taskTemplateId
+                                    });
+                                };
+                            }
+                        }
+
+                        lpTemplateDef.TaskTemplates = {
+                            list: taskTemplates,
+                            byId: taskTemplatesById
+                        };
             		}
 
-            		return Promise.resolve(templateDef);
+                    this.LearningPathTemplates.list.push(lpTemplateDef);
+                    this.LearningPathTemplates.byId[taskTemplate.learningPathTemplateId] = lpTemplateDef;
+
+            		return Promise.resolve(lpTemplateDef);
             	},
 
 	            genTestData: function() {
@@ -59,7 +91,7 @@ module.exports = NoGapDef.component({
 	                }];
 
 
-	                this.TestTemplates = [{
+	                this.createLearningPathTemplate({
 	                    title: 'Scratch: Getting started!',
 	                    description: 'hello',
 	                    isEnabled: true,
@@ -85,20 +117,24 @@ module.exports = NoGapDef.component({
 	                        description: 'Task #2 description',
 	                        isRequired: true,
 
-	                        proofTypeId: 0
+	                        proofTypeId: 0,
+                            
+                            requiredTaskIds: [1]
 	                    },{
 	                    	taskTemplateId: 3,
 	                        title: 'Task #3',
 	                        description: 'Task #3 description',
 	                        isRequired: true,
 
-	                        proofTypeId: 0
+	                        proofTypeId: 0,
+                            
+                            requiredTaskIds: [2]
 	                    }],
 
 	                    LearningPathOutcomes: [{
 	                        // TODO?
 	                    }]
-	                }];
+	                });
 	            },
             }
         };

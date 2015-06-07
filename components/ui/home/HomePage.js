@@ -65,79 +65,56 @@ module.exports = NoGapDef.component({
                     };
                     
                     // customize your $scope here:
-                    $scope.LearningPathTemplates = Instance.LearningPathTemplate.TestTemplates;
+                    $scope.LearningPathTemplates = Instance.LearningPathTemplate.LearningPathTemplates;
 
                     $scope.nodes = [{
                         id: 1,
                         data: {
                             isStatic: true,
-                            initialPosition: new Springy.Vector(-3, -4)
+                            initialPosition: new Springy.Vector(-1, 0)
                         }
                     },{
                         id: 2,
                         data: {
-                            dontAttractToCenter: true
-                        }
-                    },{
-                        id: 3,
-                        data: {
-                            dontAttractToCenter: true
-                        }
-                    },{
-                        id: 4,
-                        data: {
-                            dontAttractToCenter: true
-                        }
-                    },{
-                        id: 5,
-                        data: {
                             isStatic: true,
-                            initialPosition: new Springy.Vector(-3, 4)
+                            initialPosition: new Springy.Vector(1, 0)
                         }
-                    },{
-                        id: 101,
-                        data: {
-                            isStatic: true,
-                            initialPosition: new Springy.Vector(0, -4)
-                        }
-                    },{
-                        id: 102,
-                        data: {
-                            dontAttractToCenter: true
-                        }
-                    },{
-                        id: 103,
-                        data: {
-                            isStatic: true,
-                            initialPosition: new Springy.Vector(0, 4)
-                        }
-                    }];
-
-                    $scope.edges = [{
-                        from: 1,
-                        to: 2
-                    },{
-                        from: 1,
-                        to: 3
-                    },{
-                        from: 1,
-                        to: 4
-                    },{
-                        from: 2,
-                        to: 5
-                    },{
-                        from: 3,
-                        to: 5
-                    },{
-                        from: 4,
-                        to: 5
-                    },{
-                        from: 101,
-                        to: 102
-                    },{
-                        from: 102,
-                        to: 103
-                    }]
+                    }
+                    // ,{
+                    //     id: 3,
+                    //     data: {
+                    //         dontAttractToCenter: true
+                    //     }
+                    // },{
+                    //     id: 4,
+                    //     data: {
+                    //         dontAttractToCenter: true
+                    //     }
+                    // },{
+                    //     id: 5,
+                    //     data: {
+                    //         isStatic: true,
+                    //         initialPosition: new Springy.Vector(-3, 4)
+                    //     }
+                    // },{
+                    //     id: 101,
+                    //     data: {
+                    //         isStatic: true,
+                    //         initialPosition: new Springy.Vector(0, -4)
+                    //     }
+                    // },{
+                    //     id: 102,
+                    //     data: {
+                    //         dontAttractToCenter: true
+                    //     }
+                    // },{
+                    //     id: 103,
+                    //     data: {
+                    //         isStatic: true,
+                    //         initialPosition: new Springy.Vector(0, 4)
+                    //     }
+                    // }
+                    ];
                 });
 
                 // register page

@@ -4,19 +4,20 @@
 	<br />
 	<br />
 	<div learningpath ng-model="PC.allGraphData"
+		ng-repeat="learningPathTemplate in LearningPathTemplates.list"
 		ng-style="{
 		}">
 
-		<div learningpath-node ng-repeat="node in nodes"
-			id="{{node.id}}"
-			ng-model="node"
-			code="p = PC.allGraphData.layout.getPoint(node.id).p;">
-			node #{{node.id}}
+		<div learningpath-node ng-repeat="taskTemplate in learningPathTemplate.TaskTemplates.list"
+			id="{{taskTemplate.taskTemplateId}}"
+			ng-model="taskTemplate"
+			code="p = PC.allGraphData.layout.getPoint(node.taskTemplateId).p;">
+			node #{{taskTemplate.taskTemplateId}}
 			<!-- {{ [p.x.toFixed(2), p.y.toFixed(2)] }} -->
 		</div>
 
-		<learningpath-edge ng-repeat="edge in edges"
-			ng-model="edge">
+		<learningpath-edge ng-repeat="dependencyEdge in learningPathTemplate.taskDependencyEdges"
+			ng-model="dependencyEdge">
 			<!-- {{edge}} -->
 		</learningpath-edge>
 	</div>

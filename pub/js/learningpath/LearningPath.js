@@ -186,9 +186,13 @@
 				$scope._node = new Springy.Node(id, nodeData);
 				$scope.graph.addNode($scope._node);
 
-
+				// TODO: Check if element source information is ignored in `makeSource`!
 			    $scope._plumbInstance.makeSource($element, {
-				    anchor:["Continuous", { faces:[ "bottom" ] } ]
+				    anchor:['Continuous', { faces:[ "bottom" ] } ]
+				});
+
+			    $scope._plumbInstance.makeTarget($element, {
+				    anchor:['Continuous', { faces:[ "top" ] } ]
 				});
 
 				$element.addClass('learningpath-node');
@@ -227,8 +231,8 @@
 					JSON.stringify(edgeAllData));
 
 				var edgeData = edgeAllData.data || {};
-				var from = $scope.graph.getNode(edgeAllData.from);
-				var to = $scope.graph.getNode(edgeAllData.to);
+				var from = $scope.graph.getNode(edgeAllData.from.toString());
+				var to = $scope.graph.getNode(edgeAllData.to.toString());
 
 				if (!from || !to) {
 					throw new Error('invalid  `learningpath-edge` - invalid `from` or `to` node ids: ' + JSON.stringify(edgeAllData));
