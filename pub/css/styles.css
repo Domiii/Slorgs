@@ -1,9 +1,5 @@
 
 
-/* Make icons bigger */
-i {
-  font-size: 2.5em;
-}
 
 
 /*a, button > i {
@@ -24,11 +20,17 @@ i {
     border-radius: 0px;
     margin-bottom: 0px;
     border: 0px;
+    vertical-align: middle;
 }
 
 /* Main navbar icon size */
 .nav-main .navbar {
     
+}
+
+/* Make nav icons bigger */
+.nav-main .navbar i {
+  font-size: 1em;
 }
 
 .nav-main .navbar-nav li a {
@@ -142,7 +144,7 @@ html {
 
 
 /* ########################################################################################## */
-/* Custom button class: fancy; */
+/* Custom button class: fancy + dark */
 
 /* btn-fancy: default style*/
 .btn-fancy { 
@@ -198,6 +200,56 @@ fieldset[disabled] .btn-fancy.active {
   color: #00BBBB; 
   background-color: #FFFFFF; 
 }
+
+
+
+/*dark style*/
+.btn-dark { 
+  color: #ffffff; 
+  background-color: #222; 
+  border-color: #86858C; 
+} 
+ 
+.btn-dark:hover, 
+.btn-dark:focus, 
+.btn-dark:active, 
+.btn-dark.active, 
+.open .dropdown-toggle.btn-dark { 
+  color: #ffffff; 
+  background-color: #616161; 
+  border-color: #86858C; 
+} 
+ 
+.btn-dark:active, 
+.btn-dark.active, 
+.open .dropdown-toggle.btn-dark { 
+  background-image: none; 
+} 
+ 
+.btn-dark.disabled, 
+.btn-dark[disabled], 
+fieldset[disabled] .btn-dark, 
+.btn-dark.disabled:hover, 
+.btn-dark[disabled]:hover, 
+fieldset[disabled] .btn-dark:hover, 
+.btn-dark.disabled:focus, 
+.btn-dark[disabled]:focus, 
+fieldset[disabled] .btn-dark:focus, 
+.btn-dark.disabled:active, 
+.btn-dark[disabled]:active, 
+fieldset[disabled] .btn-dark:active, 
+.btn-dark.disabled.active, 
+.btn-dark[disabled].active, 
+fieldset[disabled] .btn-dark.active { 
+  background-color: #222; 
+  border-color: #86858C; 
+} 
+ 
+.btn-dark .badge { 
+  color: #222; 
+  background-color: #ffffff; 
+}
+  
 
 
 .btn-inline {

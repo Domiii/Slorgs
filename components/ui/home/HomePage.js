@@ -45,6 +45,8 @@ module.exports = NoGapDef.component({
         return {
             __ctor: function() {
                 ThisComponent = this;
+
+                ThisComponent.allGraphData = {};
             },
 
 
@@ -59,62 +61,73 @@ module.exports = NoGapDef.component({
                 app.lazyController('homeCtrl', function($scope) {
                     UIMgr.registerPageScope(ThisComponent, $scope);
 
+                    // LearningPaths + Tasks
+                    $scope.toggleTask = function(learningPathTemplate, taskTemplate) {
+                        var learningPathSettings = $scope.allLearningPathSettings[learningPathTemplate.learningPathTemplateId];
+                        var nodesOpen = learningPathSettings.nodesOpen;
+
+                        nodesOpen[taskTemplate.taskTemplateId] = !nodesOpen[taskTemplate.taskTemplateId];
+
+                        // re-compute layout
+                        learningPathSettings.renderer.start();
+                    };
+
+                    function getLearningTaskSettings(learningPathTemplate) {
+                        var taskTemplates = learningPathTemplate.taskTemplates.list;
+                        var learningTaskSettings = {};
+
+                        // first
+                        if (taskTemplates.length > 0) {
+                            learningTaskSettings[_.first(taskTemplates).taskTemplateId] = {
+                                data: {
+                                    isStatic: true,
+                                    initialPosition: new Springy.Vector(0, -100)
+                                }
+                            };
+                        }
+
+                        for (var i = 1; i < taskTemplates.length-1; ++i) {
+                            var taskTemplate = taskTemplates[i];
+
+                            // middle
+                            learningTaskSettings[taskTemplate.taskTemplateId] = {
+                                data: {
+                                    dontAttractToCenter: true
+                                }
+                            };
+                        };
+
+                        if (taskTemplates.length > 1) {
+                            // last
+                            learningTaskSettings[_.last(taskTemplates).taskTemplateId] = {
+                                data: {
+                                    isStatic: true,
+                                    initialPosition: new Springy.Vector(0, 100)
+                                }
+                            };
+                        }
+
+                        return learningTaskSettings;
+                    };
+
+
+                    var learningPathTemplates = $scope.learningPathTemplates = Instance.LearningPathTemplate.learningPathTemplates;
+
+                    var allLearningPathSettings = $scope.allLearningPathSettings =
+                        _.mapValues(learningPathTemplates.byId, function(learningPathTemplate) {
+                            return {
+                                taskSettings: getLearningTaskSettings(learningPathTemplate),
+
+                                nodesOpen: {}
+                            };
+                        });
+                    
+
+                    // markdown
                     $scope.mdUpdate = function() {
                         var mdPreview = markdown.toHTML($scope.mdRaw || '');
                         $('#preview').html(mdPreview);
                     };
-                    
-                    // customize your $scope here:
-                    $scope.LearningPathTemplates = Instance.LearningPathTemplate.LearningPathTemplates;
-
-                    $scope.nodes = [{
-                        id: 1,
-                        data: {
-                            isStatic: true,
-                            initialPosition: new Springy.Vector(-1, 0)
-                        }
-                    },{
-                        id: 2,
-                        data: {
-                            isStatic: true,
-                            initialPosition: new Springy.Vector(1, 0)
-                        }
-                    }
-                    // ,{
-                    //     id: 3,
-                    //     data: {
-                    //         dontAttractToCenter: true
-                    //     }
-                    // },{
-                    //     id: 4,
-                    //     data: {
-                    //         dontAttractToCenter: true
-                    //     }
-                    // },{
-                    //     id: 5,
-                    //     data: {
-                    //         isStatic: true,
-                    //         initialPosition: new Springy.Vector(-3, 4)
-                    //     }
-                    // },{
-                    //     id: 101,
-                    //     data: {
-                    //         isStatic: true,
-                    //         initialPosition: new Springy.Vector(0, -4)
-                    //     }
-                    // },{
-                    //     id: 102,
-                    //     data: {
-                    //         dontAttractToCenter: true
-                    //     }
-                    // },{
-                    //     id: 103,
-                    //     data: {
-                    //         isStatic: true,
-                    //         initialPosition: new Springy.Vector(0, 4)
-                    //     }
-                    // }
-                    ];
                 });
 
                 // register page

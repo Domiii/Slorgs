@@ -6794,7 +6794,6 @@
 
         var draggingInitialised = false;
         this.initDraggable = function () {
-
             // is this a connection source? we make it draggable and have the
             // drag listener maintain a connection with a floating endpoint.
             if (!draggingInitialised && _jp.isDragSupported(this.element)) {

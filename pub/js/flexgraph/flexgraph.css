@@ -2,22 +2,22 @@
  * @see http://www.jsplumb.org/doc/styling-via-css.html
  */
 
-.learningpath {
+.flexgraph {
 	position: relative;
 	background-color: black;
 	width: 100%;
 	height: 600px;
 }
 
-.learningpath-node {
+.flexgraph-node {
 	position: absolute;
 	background-color: #CCC;
 }
 
-.learningpath-connector {
+.flexgraph-connector {
 	color: red;
 }
 
-.learningpath-endpoint {
+.flexgraph-endpoint {
 	display: none;
 }

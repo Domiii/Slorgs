@@ -26,7 +26,7 @@ module.exports = NoGapDef.component({
 
             Private: {
             	__ctor: function() {
-                    this.LearningPathTemplates = {
+                    this.learningPathTemplates = {
                         list: [],
                         byId: {}
                     };
@@ -38,12 +38,12 @@ module.exports = NoGapDef.component({
             		// simulate DB insertion
             		lpTemplateDef.learningPathTemplateId = ++lastId;
 
-            		if (lpTemplateDef.TaskTemplates) {
-            			var taskTemplates = lpTemplateDef.TaskTemplates;
+            		if (lpTemplateDef.taskTemplates) {
+            			var taskTemplates = lpTemplateDef.taskTemplates;
                         var taskTemplatesById = {};
-            			//delete lpTemplateDef.TaskTemplates;
+            			//delete lpTemplateDef.taskTemplates;
 
-                        // prepare all TaskTemplates
+                        // prepare all taskTemplates
                         for (var iTaskTemplate = 0; iTaskTemplate < taskTemplates.length; ++iTaskTemplate) {
                             var taskTemplate = taskTemplates[iTaskTemplate];
                             taskTemplatesById[taskTemplate.taskTemplateId] = taskTemplate;
@@ -67,14 +67,14 @@ module.exports = NoGapDef.component({
                             }
                         }
 
-                        lpTemplateDef.TaskTemplates = {
+                        lpTemplateDef.taskTemplates = {
                             list: taskTemplates,
                             byId: taskTemplatesById
                         };
             		}
 
-                    this.LearningPathTemplates.list.push(lpTemplateDef);
-                    this.LearningPathTemplates.byId[taskTemplate.learningPathTemplateId] = lpTemplateDef;
+                    this.learningPathTemplates.list.push(lpTemplateDef);
+                    this.learningPathTemplates.byId[taskTemplate.learningPathTemplateId] = lpTemplateDef;
 
             		return Promise.resolve(lpTemplateDef);
             	},
@@ -99,12 +99,7 @@ module.exports = NoGapDef.component({
 	                    startTime: null,
 	                    endTime: null,
 
-	                    // TODO: Who has this been assigned to? (teacher-centric)
-	                    // TODO: Who may choose this path? (student self-organization + optional paths)
-	                    UsersWithAccess: [],
-	                    GroupsWithAccess: [],
-
-	                    TaskTemplates: [{
+	                    taskTemplates: [{
 	                    	taskTemplateId: 1,
 	                        title: 'Task #1',
 	                        description: 'Task #1 description',
@@ -131,7 +126,12 @@ module.exports = NoGapDef.component({
                             requiredTaskIds: [2]
 	                    }],
 
-	                    LearningPathOutcomes: [{
+                        // TODO: Who has this been assigned to? (teacher-centric)
+                        // TODO: Who may choose this path? (student self-organization + optional paths)
+                        usersWithAccess: [],
+                        groupsWithAccess: [],
+
+	                    learningPathOutcomes: [{
 	                        // TODO?
 	                    }]
 	                });
