@@ -36,10 +36,14 @@
                 // ##########################################################################################
                 // create new jsPlumb instance
 
+                // TODO: Fix dragging of connections
+
                 // see basic fiddle: http://jsfiddle.net/xkvzgj82/
                 var plumbInstance = $scope._plumbInstance = jsPlumb.getInstance({
                     // default drag options
-                    DragOptions: {  },
+                    Defaults: {
+                    	DragOptions: {  }
+                    },
 
                     // the overlays to decorate each connection with.  note that the label overlay uses a function to generate the label text; in this
                     // case it returns the 'labelText' member that we set on each connection in the 'init' method below.
@@ -53,6 +57,8 @@
                     ],
                     Container: $element,
                 });
+
+                //$scope._plumbInstance.setSuspendDrawing(true);
 
                 // need to set css classes after ctor (bug in API)
                 plumbInstance.connectorClass = 'flexgraph-connector';
@@ -153,6 +159,7 @@
         }
 
         function postLink($scope, $element, $attrs, $ngModelCtrl) {
+        	//$scope._plumbInstance.setSuspendDrawing(false, true);
         }
 
         // see: http://jasonmore.net/angular-js-directives-difference-controller-link/
@@ -196,14 +203,20 @@
                 $scope._node = new Springy.Node(id, nodeData);
                 $scope.graph.addNode($scope._node);
 
+                var plumbInstance = $scope._plumbInstance;
+
                 // // TODO: Check if element source information is ignored in `makeSource`!
-                $scope._plumbInstance.makeSource($element, {
-                    anchor:['Continuous', { faces:[ 'bottom' ] } ]
+                plumbInstance.makeSource($element, {
+                    anchor: ['Continuous', { faces:[ 'bottom' ] } ]
                 });
 
-                $scope._plumbInstance.makeTarget($element, {
+                plumbInstance.makeTarget($element, {
                     anchor: ['Continuous', { faces:['top'] }]
                 });
+
+
+                // TODO: Disabling dragging does not work!
+                plumbInstance.setElementDraggable($element, false);
 
                 $element.addClass('flexgraph-node');
 
