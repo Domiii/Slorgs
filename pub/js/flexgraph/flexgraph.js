@@ -215,7 +215,8 @@
                 });
 
 
-                // TODO: Disabling dragging does not work!
+                // TODO: Fix weird dragging issues
+
                 plumbInstance.setElementDraggable($element, false);
 
                 $element.addClass('flexgraph-node');
@@ -264,9 +265,6 @@
                 if (!from || !to) {
                     throw new Error('invalid  `flexgraph-edge` - invalid `from` or `to` node ids: ' + JSON.stringify(edgeAllData));
                 }
-
-                // TODO: Restrict anchors to "bottom-to-top" only
-                // see: https://jsplumbtoolkit.com/demo/dynamicAnchors/demo.js
 
                 $scope._plumbInstance.connect({
                     //source: edgeAllData.from.toString(),
