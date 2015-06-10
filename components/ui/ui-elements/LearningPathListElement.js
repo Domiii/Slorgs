@@ -13,7 +13,7 @@ module.exports = NoGapDef.component({
         Assets: {
             Files: {
                 string: {
-                    template: 'HomePage.html'
+                    template: 'LearningPathListElement.html'
                 }
             },
             AutoIncludes: {
@@ -56,6 +56,7 @@ module.exports = NoGapDef.component({
 
                 var taskTemplates = this.learningPathTemplate.taskTemplates.list;
                 var taskSettings = this.taskSettings = {};
+                this.nodesOpen = {};
 
                 // first
                 if (taskTemplates.length > 0) {
@@ -111,24 +112,24 @@ module.exports = NoGapDef.component({
              */
             setupUI: function(UIMgr, app) {
 
-                // create page controller
-                app.lazyController('homeCtrl', function($scope) {
-                    UIMgr.registerPageScope(ThisComponent, $scope);
+                // create learning-path-list directive
+                app.lazyController('learningPathList', function($scope) {
+                    Instance.UIMgr.registerElementScope(this, $scope);
 
 
                     // ###############################################################
                     // LearningPath data
                     
-                    var learningPathTemplates = $scope.learningPathTemplates = Instance.LearningPathTemplate.learningPathTemplates;
+                    $scope.bindAttrExpr($attrs, '', function(learningPathTemplates) {
+                        if (!learningPathTemplates) return;
 
-                    var allLearningPathViews = $scope.allLearningPathViews =
-                        _.mapValues(learningPathTemplates.byId, function(learningPathTemplate) {
-                            return new ThisComponent.LearningPathView($scope, {
-                                learningPathTemplate: learningPathTemplate,
-
-                                nodesOpen: {}
-                            });
-                        });
+                        var allLearningPathViews = $scope.allLearningPathViews =
+                            _.mapValues(learningPathTemplates.byId, function(learningPathTemplate) {
+                                return new ThisComponent.LearningPathView($scope, {
+                                    learningPathTemplate: learningPathTemplate,
+                                });
+                            }); 
+                    });
 
 
                     // ###############################################################
@@ -149,9 +150,7 @@ module.exports = NoGapDef.component({
                 });
 
                 // register page
-                Instance.UIMgr.registerPage(this, 'Home', this.assets.template, {
-                    iconClasses: 'fa fa-home'
-                });
+                Instance.UIMgr.registerElementComponent(this);
             },
             
             /**

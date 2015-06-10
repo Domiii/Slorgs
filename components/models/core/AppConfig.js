@@ -42,7 +42,7 @@ module.exports = NoGapDef.component({
                 }
             },
 
-            Caches: {
+            DataProviders: {
                 appConfig: {
                     idProperty: 'configId',
 

@@ -144,12 +144,13 @@ module.exports = {
         'files'        : [
             // core utilities (need to initialize first, for now)
             'util/RuntimeError',
-            'util/CacheUtil',
+            'util/DataProvider',
 
             // core components
-            'models/learningpaths/LearningPathTemplate',
             'models/core/AppConfig',
             'models/core/User',
+
+            'models/learningpaths/LearningPathTemplate',
 
             // misc utilities
             'util/Auth',
@@ -169,7 +170,10 @@ module.exports = {
 
             // user pages:
             'ui/home/HomePage',
-            'ui/account/AccountPage'
+            'ui/account/AccountPage',
+
+            // other UI elements:
+            'ui/ui-elements/LearningPathListElement'
         ]
     },
 };

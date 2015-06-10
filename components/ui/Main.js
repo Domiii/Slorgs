@@ -110,7 +110,7 @@ module.exports = NoGapDef.component({
                     'LearningPathTemplate',
 
                     // utilities
-                    'CacheUtil',
+                    'DataProvider',
                     'MiscUtil',
                     'Localizer',
                     'Log',
@@ -140,10 +140,10 @@ module.exports = NoGapDef.component({
              */
             onClientBootstrap: function() {
                 // explicitely install caches
-                this.Instance.CacheUtil.initCaches();
+                this.Instance.DataProvider.initDataProviders();
 
                 // sanity check: Make sure, User cache is present
-                console.assert(this.Instance.User.users, 'INITIALIZATION FAILED: Cache installation failed.');
+                console.assert(this.Instance.User.users, 'INITIALIZATION FAILED: DataProvider installation failed.');
 
                 // resume user session
                 return this.Instance.User.resumeSession();
@@ -208,7 +208,8 @@ module.exports = NoGapDef.component({
              */
             {
                 otherComponents: [
-                    // core utilities
+                    // other
+                    'LearningPathListElement'
                 ],
 
                 pageComponents: [

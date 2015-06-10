@@ -4936,8 +4936,8 @@
                     }.bind(this);
 
                     //this.on(_el, "mousedown", mouseDownListener);
-                    this.on(elInfo.el, "mousedown", mouseDownListener);
-                    _def.trigger = mouseDownListener;
+                    // this.on(elInfo.el, "mousedown", mouseDownListener);
+                    // _def.trigger = mouseDownListener;
 
                     // if a filter was provided, set it as a dragFilter on the element,
                     // to prevent the element drag function from kicking in when we want to

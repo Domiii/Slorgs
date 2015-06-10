@@ -93,8 +93,7 @@ module.exports = NoGapDef.component({
                 }.bind(this));
             },
 
-            // Caches (static member)
-            Caches: {
+            DataProviders: {
                 users: {
                     idProperty: 'uid',
 
@@ -111,15 +110,8 @@ module.exports = NoGapDef.component({
                         },
                     ],
 
-                    InstanceProto: {
-                        initialize: function(users) {
-                            // add Instance object to new User instance
-                            Object.defineProperty(this, 'Instance', {
-                                enumerable: false,
-                                value: users.Instance
-                            });
-                        }
-                    },
+                    // InstanceProto: {
+                    // },
 
                     members: {
                         getObjectNow: function(queryInput, ignoreAccessCheck) {
@@ -203,11 +195,6 @@ module.exports = NoGapDef.component({
     }),
 
     Host: NoGapDef.defHost(function(SharedTools, Shared, SharedContext) {
-        var componentsRoot,
-            appRoot,
-            libRoot,
-            pubRoot;
-
         var UserModel;
         var UserRole;
 
@@ -223,10 +210,8 @@ module.exports = NoGapDef.component({
 
         return {
             __ctor: function () {
-                componentsRoot = '../../';
-                appRoot = componentsRoot + '../';
-                libRoot = appRoot + 'lib/';
-                pubRoot = appRoot + 'pub/';
+                var libRoot = ApplicationRoot + 'lib/';
+                var pubRoot = ApplicationRoot + 'pub/';
 
                 SequelizeUtil = require(libRoot + 'SequelizeUtil');
                 TokenStore = require(libRoot + 'TokenStore');
@@ -268,6 +253,7 @@ module.exports = NoGapDef.component({
                     facebookToken: Sequelize.STRING(100)
                 },{
                     freezeTableName: true,
+                    tableName: 'User',
                     classMethods: {
                         onBeforeSync: function(models) {
                         },
@@ -286,7 +272,7 @@ module.exports = NoGapDef.component({
             },
 
             
-            Caches: {
+            DataProviders: {
                 users: {
                     members: {
                         filterClientObject: function(user) {
@@ -799,14 +785,14 @@ module.exports = NoGapDef.component({
                 // Misc getters & setters
 
                 /**
-                 * TODO: Go through cache instead
+                 * 
                  */
                 findUser: function(where) {
                     // query user from DB
                     return this.users.getObject(where, true, false, true)
                     .bind(this)
                     .then(function(user) {
-                        console.assert(!user || user === this.users.getObjectNowById(user.uid), 'INTERNAL ERROR - users cache inconsistent');
+                        console.assert(!user || user === this.users.getObjectNowById(user.uid), 'INTERNAL ERROR - users DataProvider inconsistent');
                         return user;
                     });
                 },
@@ -849,7 +835,7 @@ module.exports = NoGapDef.component({
                         // send user object to client
                         this.users.applyChanges([user]);
                         if (this.users.getObjectNowById(uid) !== this.currentUser) {
-                            this.Tools.handleError(new Error('Cache error'));
+                            this.Tools.handleError(new Error('DataProvider error'));
                         };
                     }
                     
@@ -977,7 +963,7 @@ module.exports = NoGapDef.component({
 
 
             // ################################################################################################################
-            // Client-side cache
+            // Client-side data management
 
             /**
              * Events for changes in user data.
@@ -989,7 +975,7 @@ module.exports = NoGapDef.component({
                 updatedCurrentUser: squishy.createEvent(/* currentUser */)
             },
 
-            cacheEventHandlers: {
+            dataProviderEventHandlers: {
                 users: {
                     updated: function(newValues) {
                         if (ThisComponent.currentUser) {
@@ -1033,7 +1019,7 @@ module.exports = NoGapDef.component({
                 setCurrentUser: function(uid) {
                     this.currentUser = uid && this.users.getObjectNowById(uid);
                     if (uid && !this.currentUser) {
-                        console.error('Cache `users` failed: Could not look up currentUser!');
+                        console.error('DataProvider `users` failed: Could not look up currentUser!');
                         debugger;
                     }
 

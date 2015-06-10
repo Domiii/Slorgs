@@ -301,7 +301,7 @@ module.exports = NoGapDef.component({
             },
 
             Private: {
-                Caches: {
+                DataProviders: {
                     notificationEntries: {
                         idProperty: 'notificationEntryId',
 
@@ -440,6 +440,7 @@ module.exports = NoGapDef.component({
 
                     var dbEntries = targetSettings.createNotificationTargets(entry);
                     if (!(dbEntries instanceof Array)) {
+                        // error...
                         // TODO: This is a hackaround. Make this proper.
                         return Promise.reject(dbEntries);
                     }
@@ -521,7 +522,7 @@ module.exports = NoGapDef.component({
                 }.bind(this);
 
                 // get all kinds of default data
-                promises.push(Instance.CacheUtil.requestDataBatch(notificationCache.list, collectIdsByDataProviderName));
+                promises.push(Instance.DataProvider.requestDataBatch(notificationCache.list, collectIdsByDataProviderName));
 
                 // add special data requests:
                 // TODO: Batch this

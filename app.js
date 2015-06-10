@@ -32,6 +32,7 @@ var publicFolder = appConfig.publicFolder = './pub/';
 
 // Lo-Dash brings all kinds of utilities for array and object manipulation
 // see: http://stackoverflow.com/questions/13789618/differences-between-lodash-and-underscore
+GLOBAL.ApplicationRoot = __dirname + '/';
 GLOBAL._ = require(publicFolder + 'lib/lodash.min');
 
 // moment.js for timing and measuring time
@@ -91,7 +92,7 @@ GLOBAL.Promise.longStackTraces();
 
 // fix stacktrace length
 // see: http://stackoverflow.com/questions/7697038/more-than-10-lines-in-a-node-js-stack-error
-Error.stackTraceLimit = 100;    // TODO: For some reason, Bluebird node ignores us here
+Error.stackTraceLimit = 8;    // TODO: For some reason, Bluebird node ignores us here
 //Error.stackTraceLimit = Infinity;
 
 
