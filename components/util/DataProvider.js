@@ -690,6 +690,8 @@ module.exports = NoGapDef.component({
                 // ctor
                 this.name = dataProviderName;
                 this._dataProviderDescriptor = dataProviderDescriptor;
+
+                !!!!TODO: re-think dataProviderEventHandlers vs. better data-binding!!!!
                 
                 /**
                  * This DataProvider's events
@@ -1772,7 +1774,7 @@ module.exports = NoGapDef.component({
         return {
             __ctor: function() {
                 // ################################################################################################
-                // Client-side DataProvider endpoint implementations
+                // Client-side DataProvider endpoint implementation
 
                 this.DataProviderEndpoint = squishy.extendClass(this.DataProviderEndpointBase, function(dataProviderName, dataProviderDescriptor) {
                     // ctor
@@ -1947,6 +1949,10 @@ module.exports = NoGapDef.component({
                 });
             },
 
+
+            // ################################################################################################
+            // Client-side DataProvider initialization
+
             initClient: function() {
                 this.initDataProviders();
             },
@@ -1955,6 +1961,59 @@ module.exports = NoGapDef.component({
                 this._autoInstallComponentDataProviders(component);
                 this._installDataProviderEventHandlers(component);
             },
+
+
+            // ################################################################################################
+            // Client-side DataProvider data-binding
+
+            /**
+             * This is currently called on page components when they are activated.
+             * Only active page components should enable data binding.
+             *
+             * TODO: Eventually, this needs to be further modulized so only "currently visible" data is properly bound
+             * to reduce overhead.
+             */
+            startComponentDataBinding: function(component) {
+                if (!component.refreshData) return;
+
+                var minRefreshDelay = 300;
+                var delay = component.refreshDelay || Instance.AppConfig.getValue('defaultPageRefreshDelay');
+                if (isNaN(delay) || delay < minRefreshDelay) {
+                    // sanity check
+                    console.error('`refreshDelay` too fast for page: ' + page.name);
+                    delay = minRefreshDelay;
+                }
+                
+                component._refreshTimer = setTimeout(function() {
+                    Promise.resolve()
+                    .then(function() {
+                        if (!component.refreshPaused) {
+                            return component.refreshData();
+                        }
+                    })
+                    .finally(function() {
+                        // repeat
+                        ThisComponent._doRefresh(component);
+                    });
+                }, delay);
+
+                component.refreshData();
+
+                //return component.refreshData();
+            },
+
+            stopComponentDataBinding: function(component) {
+                // disable running timer(s)
+                if (component._refreshTimer) {
+                    clearTimeout(component._refreshTimer);
+                    component._refreshTimer = null;
+                }
+            },
+
+
+
+            // ################################################################################################
+            // Client-side DataProvider request batching
 
             /**
              * Request all kinds of missing data in a single batch.
@@ -2022,9 +2081,10 @@ module.exports = NoGapDef.component({
                 });
             },
 
-            /**
-             * Client commands can be directly called by the host
-             */
+
+            // ################################################################################################
+            // Client-side DataProvider Public methods
+
             Public: {
                 /**
                  * Host sent changed data.

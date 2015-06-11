@@ -42,6 +42,9 @@ module.exports = NoGapDef.component({
     Client: NoGapDef.defClient(function(Tools, Instance, Context) {
         var ThisComponent;
 
+        // TODO: All paths in one graph
+        // TODO: Embed graphs into virtual node network
+
         return {
             __ctor: function() {
                 ThisComponent = this;
@@ -53,40 +56,24 @@ module.exports = NoGapDef.component({
                 // ctor
                 this.$scope = $scope;
                 _.merge(this, settings);
+                this.nodesOpen = {};
 
-                var taskTemplates = this.learningPathTemplate.taskTemplates.list;
+                // create new graph
+                this.graph = new Springy.Graph()
+
+                // prepare task node data
+                var taskTemplates = this.learningPathTemplates.taskTemplates.list;
                 var taskSettings = this.taskSettings = {};
 
-                // first
-                if (taskTemplates.length > 0) {
-                    taskSettings[_.first(taskTemplates).taskTemplateId] = {
-                        data: {
-                            isStatic: true,
-                            initialPosition: new Springy.Vector(0, 0)
-                        }
-                    };
-                }
-
-                for (var i = 1; i < taskTemplates.length-1; ++i) {
+                for (var i = 0; i < taskTemplates.length; ++i) {
                     var taskTemplate = taskTemplates[i];
 
-                    // middle
                     taskSettings[taskTemplate.taskTemplateId] = {
-                        data: {
+                        dynamics: {
                             dontAttractToCenter: true
                         }
                     };
                 };
-
-                if (taskTemplates.length > 1) {
-                    // last
-                    taskSettings[_.last(taskTemplates).taskTemplateId] = {
-                        data: {
-                            isStatic: true,
-                            initialPosition: new Springy.Vector(0, taskTemplates.length * 100)
-                        }
-                    };
-                }
             },{
                 // methods
                 toggleTask: function(taskTemplate) {
@@ -99,6 +86,18 @@ module.exports = NoGapDef.component({
                 addChild: function(taskTemplate) {
                     // re-compute layout
                     this.renderer.start();
+                },
+
+                /**
+                 *
+                 */
+                addVirtualNode: function(settings) {
+                    taskSettings[_.first(taskTemplates).taskTemplateId] = {
+                        dynamics: {
+                            isStatic: true,
+                            initialPosition: new Springy.Vector(0, 0)
+                        }
+                    };
                 }
             }),
 
@@ -121,14 +120,15 @@ module.exports = NoGapDef.component({
                     
                     var learningPathTemplates = $scope.learningPathTemplates = Instance.LearningPathTemplate.learningPathTemplates;
 
-                    var allLearningPathViews = $scope.allLearningPathViews =
-                        _.mapValues(learningPathTemplates.byId, function(learningPathTemplate) {
-                            return new ThisComponent.LearningPathView($scope, {
-                                learningPathTemplate: learningPathTemplate,
-
-                                nodesOpen: {}
-                            });
-                        });
+                    // var allLearningPathViews = $scope.allLearningPathViews =
+                    //     _.mapValues(learningPathTemplates.byId, function(learningPathTemplate) {
+                    //         return new ThisComponent.LearningPathView($scope, {
+                    //             learningPathTemplate: learningPathTemplate
+                    //         });
+                    //     });
+                    var allLearningPathViews = $scope.allLearningPathViews = [new ThisComponent.LearningPathView($scope, {
+                        learningPathTemplates: learningPathTemplates
+                    })];
 
 
                     // ###############################################################
@@ -153,9 +153,27 @@ module.exports = NoGapDef.component({
                     iconClasses: 'fa fa-home'
                 });
             },
+
+
+            // ####################################################
+            // data "binding"
+
+            /**
+             * Handling set of dependent data providers
+             */
+            dataProviders: {
+                LearningPathTemplate: {
+                    query: function() { return {}; },
+
+                    onUpdate: function(templates) {
+
+                    }
+
+                }
+            },
             
             /**
-             * Client commands can be directly called by the host
+             * Client Public methods can be directly called by the host
              */
             Public: {
                 

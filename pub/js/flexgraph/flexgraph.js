@@ -80,7 +80,7 @@
                 // ##########################################################################################
                 // create springy instance
 
-                var graph = allGraphData.graph = $scope.graph = new Springy.Graph();
+                var graph =  $scope.graph = allGraphData.graph || (allGraphData.graph = new Springy.Graph());
 
                 // create layout
                 var layout = allGraphData.layout = $scope.layout = new Springy.Layout.ForceDirected(
@@ -197,7 +197,7 @@
                     throw new Error('invalid `flexgraph-node` - does not have an id set');
                 }
 
-                var nodeData = allNodeData.data = allNodeData.data || {};
+                var nodeData = allNodeData.data = allNodeData.dynamics || {};
                 nodeData.$element = $element;
 
                 $scope._node = new Springy.Node(id, nodeData);
@@ -258,7 +258,7 @@
                     'invalid  `flexgraph-edge` - must have `ng-model` attribute, containing at least `from` and `to` (node ids): ' + 
                     JSON.stringify(edgeAllData));
 
-                var edgeData = edgeAllData.data || {};
+                var edgeData = edgeAllData.dynamics || {};
                 var from = $scope.graph.getNode(edgeAllData.from.toString());
                 var to = $scope.graph.getNode(edgeAllData.to.toString());
 

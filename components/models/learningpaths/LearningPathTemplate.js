@@ -204,11 +204,11 @@ module.exports = NoGapDef.component({
                             models.LearningPathTemplate.hasMany(models.LearningPathTaskDependency, 
                                 { foreignKey: 'learningPathTemplateId' , as: 'learningPathTaskDependencies', constraints: false});
 
-                            This.includes = [{
-                                model: models.LearningPathTaskTemplate,
-                            },{
-                                model: models.LearningPathTaskDependency,
-                            }];
+                            // This.includes = [{
+                            //     model: models.LearningPathTaskTemplate,
+                            // },{
+                            //     model: models.LearningPathTaskDependency,
+                            // }];
                         },
 
                         onAfterSync: function(models) {

@@ -662,10 +662,6 @@ module.exports = NoGapDef.component({
                 return activePage && activePage.component.getPageArgs() || '';
             },
 
-            refreshActivePage: function() {
-                activePage && activePage.component.activatePage(null, true);
-            },
-
             /**
              * Use a stupid heuristic to get component name from page name
              */
@@ -871,11 +867,7 @@ module.exports = NoGapDef.component({
             },
 
             _onPageDeactivate: function(page, newPage) {
-                // disable running timer(s)
-                if (page.component._refreshTimer) {
-                    clearTimeout(page.component._refreshTimer);
-                    page.component._refreshTimer = null;
-                }
+                Instance.DataProvider.stopComponentDataBinding(page.component);
 
                 // fire event
                 this._callOnPageDeactivateOnComponent(page.component, newPage);
@@ -956,13 +948,14 @@ module.exports = NoGapDef.component({
                 // this creates the page scope
                 invalidateView();
 
-                // start timer to call `refreshData`
-                if (component.refreshData) {
-                    ThisComponent._doRefresh(component);
-                }
+                // start data
+                var refreshPromise = Instance.DataProvider.startComponentDataBinding(component);
 
                 // call `onPageActivate`
-                return this._callOnPageActivateOnComponent(component, pageArgs)
+                return Promise.join(
+                    this._callOnPageActivateOnComponent(component, pageArgs),
+                    refreshPromise
+                )
                 .bind(this)
                 .then(function() {
                     // add history entry
@@ -970,28 +963,6 @@ module.exports = NoGapDef.component({
                 });
             },
 
-            _doRefresh: function(component) {
-                var minRefreshDelay = 300;
-                var delay = component.refreshDelay || Instance.AppConfig.getValue('defaultPageRefreshDelay');
-                if (isNaN(delay) || delay < minRefreshDelay) {
-                    // sanity check
-                    console.error('refreshDelay too fast for page: ' + page.name);
-                    delay = minRefreshDelay;
-                }
-                
-                component._refreshTimer = setTimeout(function() {
-                    Promise.resolve()
-                    .then(function() {
-                        if (!component.refreshPaused) {
-                            return component.refreshData();
-                        }
-                    })
-                    .finally(function() {
-                        // repeat
-                        ThisComponent._doRefresh(component);
-                    });
-                }, delay);
-            },
                     
             /**
              * Deactivate current and activate new page.
