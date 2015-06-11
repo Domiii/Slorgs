@@ -7,75 +7,93 @@
 	
 	<div>
 		<div flexgraph
-			ng-repeat="learningPathTemplate in learningPathTemplates.list"
-			ng-init="learningPathView = allLearningPathViews[learningPathTemplate.learningPathTemplateId]"
-		 	ng-model="allLearningPathViews[learningPathTemplate.learningPathTemplateId]"
+		 	ng-model="learningPathView"
 			ng-style="{
 			}">
 
-			<a href="#" class="btn btn-lg btn-dark some-margin"
-				ng-class="{active: editing}"
-				ng-click="toggleEditMode()"
-				onfocus="$(this).blur();">
-				<i class="fa fa-edit" style="font-size: 2em;"></i>
-			</a>
+ 			<!-- buttons -->
+			<div style="background: rgba(0,0,0,0);">
+				<!-- Edit button -->
+				<a href="#" class="btn btn-lg btn-dark some-margin"
+					ng-class="{active: editing}"
+					ng-click="toggleEditMode()"
+					onfocus="$(this).blur();">
+					<i class="fa fa-edit" style="font-size: 2em;"></i>
+				</a>
 
-			<div flexgraph-node ng-repeat="taskTemplate in learningPathTemplate.taskTemplates.list"
-				id="{{taskTemplate.taskTemplateId}}"
-				ng-model="learningPathView.taskSettings[taskTemplate.taskTemplateId]"
-				style="background: rgba(0,0,0, 0);"
-				code="p = learningPathView.layout.getPoint(taskTemplate.taskTemplateId).p;">
-
-				<div style="background: white; border-radius: 6px; display: inline-block;">
-					<!-- node summary -->
-					<div class="" style="font-size: 2em; vertical-align: middle;">
-						<a class="btn btn-default" href="#"
-							style="background: white; height: 100%; display: inline-block;"
-							onfocus="$(this).blur();"><i class="fa fa-circle-thin" style="font-size: 2em;"></i
-						></a><a class="btn btn-default" href="#"
-							ng-click="learningPathView.toggleTask(taskTemplate)"
-							style="background: white; font-size: 1em; vertical-align: middle;"
-							onfocus="$(this).blur();">
-
-							<span>
-								{{taskTemplate.title}}
-							</span>
-
-							<i ng-if="!learningPathView.nodesOpen[taskTemplate.taskTemplateId]"
-								style="font-size: 1.5em;"
-								class="fa fa-chevron-down"></i>
-							<i ng-if="learningPathView.nodesOpen[taskTemplate.taskTemplateId]"
-								style="font-size: 1.5em;"
-								class="fa fa-chevron-up"></i>
-						</a>
-					</div>
-
-					<!-- node details -->
-					<div ng-if="learningPathView.nodesOpen[taskTemplate.taskTemplateId]"
-						class="some-padding">
-						<span>
-							{{taskTemplate.description}}
-						</span>
-					</div>
-				</div>
-
-				<!-- editor options -->
-				<!-- <div ng-style="{'visibility': learningPathView.nodesOpen[taskTemplate.taskTemplateId] && 'visible' || 'hidden'}" -->
-				<div ng-if="editing && learningPathView.nodesOpen[taskTemplate.taskTemplateId]"
-					style="display: inline-block; position: relative;">
-					
+				<span ng-if="editing">
 					<a href="#" class="btn btn-lg btn-dark"
-						ng-click="learningPathView.addChild(taskTemplate)"
+						ng-click="learningPathView.addLearningPathTemplate()"
 						onfocus="$(this).blur();">
 						<i class="fa fa-plus" style="font-size: 2em; color: lightgreen;"></i>
+						Add Task
 					</a>
-				</div>
+				</span>
 			</div>
 
-			<flexgraph-edge ng-repeat="dependencyEdge in learningPathTemplate.taskDependencyEdges"
-				ng-model="dependencyEdge">
-				<!-- {{edge}} -->
-			</flexgraph-edge>
+			<!-- invisible LearningPath layer -->
+			<div ng-repeat="learningPathTemplate in learningPathTemplates.list"
+				style="background: rgba(0,0,0,0)">
+
+				<!-- Task node -->
+				<div flexgraph-node ng-repeat="taskTemplate in learningPathTemplate.taskTemplates.list"
+					id="{{taskTemplate.taskTemplateId}}"
+					ng-model="learningPathView.taskSettings[taskTemplate.taskTemplateId]"
+					style="background: rgba(0,0,0, 0);"
+					code="p = learningPathView.layout.getPoint(taskTemplate.taskTemplateId).p;">
+
+					<div style="background: white; border-radius: 6px; display: inline-block;">
+						<!-- node summary -->
+						<div class="" style="font-size: 2em; vertical-align: middle;">
+							<a class="btn btn-default" href="#"
+								style="background: white; height: 100%; display: inline-block;"
+								onfocus="$(this).blur();"><i class="fa fa-circle-thin" style="font-size: 2em;"></i
+							></a><a class="btn btn-default" href="#"
+								ng-click="learningPathView.toggleTask(taskTemplate)"
+								style="background: white; font-size: 1em; vertical-align: middle;"
+								onfocus="$(this).blur();">
+
+								<span>
+									{{taskTemplate.title}}
+								</span>
+
+								<i ng-if="!learningPathView.tasksOpen[taskTemplate.taskTemplateId]"
+									style="font-size: 1.5em;"
+									class="fa fa-chevron-down"></i>
+								<i ng-if="learningPathView.tasksOpen[taskTemplate.taskTemplateId]"
+									style="font-size: 1.5em;"
+									class="fa fa-chevron-up"></i>
+							</a>
+						</div>
+
+						<!-- node details -->
+						<div ng-if="learningPathView.tasksOpen[taskTemplate.taskTemplateId]"
+							class="some-padding">
+							<span>
+								{{taskTemplate.description}}
+							</span>
+						</div>
+					</div>
+
+					<!-- editor options -->
+					<!-- <div ng-style="{'visibility': learningPathView.tasksOpen[taskTemplate.taskTemplateId] && 'visible' || 'hidden'}" -->
+					<div ng-if="editing && learningPathView.tasksOpen[taskTemplate.taskTemplateId]"
+						style="display: inline-block; position: relative;">
+						
+						<a href="#" class="btn btn-lg btn-dark"
+							ng-click="learningPathView.addChildTask(taskTemplate)"
+							onfocus="$(this).blur();">
+							<i class="fa fa-plus" style="font-size: 2em; color: lightgreen;"></i>
+						</a>
+					</div>
+				</div>
+
+				<!-- Task dependency edge -->
+				<flexgraph-edge ng-repeat="dependencyEdge in learningPathTemplate.taskDependencyEdges"
+					ng-model="dependencyEdge">
+					<!-- {{edge}} -->
+				</flexgraph-edge>
+			</div>
 		</div>
 	</div>
 

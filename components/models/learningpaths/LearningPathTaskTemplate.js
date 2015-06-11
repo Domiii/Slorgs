@@ -13,7 +13,7 @@ module.exports = NoGapDef.component({
             // ####################################################
             // 
             DataProviders: {
-                learningPathTemplateTasks: {
+                learningPathTaskTemplates: {
                     idProperty: 'learningPathTemplateTaskId',
 
                     indices: [
@@ -49,7 +49,8 @@ module.exports = NoGapDef.component({
                     learningPathTemplateTaskId: {type: DataTypes.INTEGER.UNSIGNED, primaryKey: true, autoIncrement: true},
 
                     learningPathTemplateId: {
-                        type: DataTypes.INTEGER.UNSIGNED
+                        type: DataTypes.INTEGER.UNSIGNED,
+                        allowNull: false
                     },
 
                     title: DataTypes.STRING(256),

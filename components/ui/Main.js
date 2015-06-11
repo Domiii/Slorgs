@@ -106,9 +106,6 @@ module.exports = NoGapDef.component({
                     'AppConfig', 
                     'User',
 
-                    // application stuff
-                    'LearningPathTemplate',
-
                     // utilities
                     'DataProvider',
                     'MiscUtil',
@@ -208,7 +205,13 @@ module.exports = NoGapDef.component({
              */
             {
                 otherComponents: [
-                    // other
+                    // other model components
+                    'LearningPathTemplate',
+                    'LearningPathTaskTemplate',
+                    'LearningPathTaskDependency',
+
+
+                    // other UI components
                     'LearningPathListElement'
                 ],
 

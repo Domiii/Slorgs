@@ -56,48 +56,102 @@ module.exports = NoGapDef.component({
                 // ctor
                 this.$scope = $scope;
                 _.merge(this, settings);
-                this.nodesOpen = {};
+                this.tasksOpen = {};
+                this.taskSettings = {};
 
                 // create new graph
                 this.graph = new Springy.Graph()
-
-                // prepare task node data
-                var taskTemplates = this.learningPathTemplates.taskTemplates.list;
-                var taskSettings = this.taskSettings = {};
-
-                for (var i = 0; i < taskTemplates.length; ++i) {
-                    var taskTemplate = taskTemplates[i];
-
-                    taskSettings[taskTemplate.taskTemplateId] = {
-                        dynamics: {
-                            dontAttractToCenter: true
-                        }
-                    };
-                };
             },{
                 // methods
                 toggleTask: function(taskTemplate) {
-                    this.nodesOpen[taskTemplate.taskTemplateId] = !this.nodesOpen[taskTemplate.taskTemplateId];
+                    this.tasksOpen[taskTemplate.taskTemplateId] = !this.tasksOpen[taskTemplate.taskTemplateId];
 
                     // re-compute layout
                     this.renderer.start();
                 },
 
-                addChild: function(taskTemplate) {
-                    // re-compute layout
-                    this.renderer.start();
+                addLearningPathTemplate: function() {
+                    var learningPathTemplates = Instance.LearningPathTemplate.learningPathTemplates;
+                    var learningPathTaskTemplates = Instance.LearningPathTaskTemplate.learningPathTaskTemplates;
+                    var lastTaskTemplate = _.last(learningPathTaskTemplates.list);
+
+                    var _newLearningPathTemplate = {
+                        title: 'new learning path',
+                        description: '',
+                        isEnabled: false,
+                        ownerType: null         // TODO: Assign tasks to students (how?)
+                    };
+
+                    ThisComponent.isBusy = true;
+                    return learningPathTemplates.createObject(_newLearningPathTemplate)
+                    .then(function(newLearningPathTemplate) {
+                        // add first task to learning path
+                        var _newTaskTemplate = {
+                            learningPathTemplateId: newLearningPathTemplate.learningPathTemplateId,
+
+                            title: 'new task #' + (lastTaskTemplate && lastTaskTemplate.taskTemplateId+1 || 1),
+                            description: '',
+                            isRequired: true
+                        };
+                        return learningPathTaskTemplates.createObject(_newTaskTemplate)
+                    })
+                    .finally(function() {
+                        ThisComponent.isBusy = false;
+                    })
+                    .then(function() {
+                        // re-compute layout
+                        this.renderer.start();
+                        ThisComponent.page.invalidateView();
+                    })
+                    .catch(ThisComponent.page.handleError);
+                },
+
+                addChildTask: function(parentTaskTemplate) {
+                    var learningPathTaskTemplates = Instance.LearningPathTaskTemplate.learningPathTaskTemplates;
+                    var learningPathTaskDependencies = Instance.LearningPathTaskDependency.learningPathTaskDependencies;
+                    var lastTaskTemplate = _.last(learningPathTaskTemplates.list);
+
+                    var _newTaskTemplate = {
+                        learningPathTemplateId: parentTaskTemplate.learningPathTemplateId,
+
+                        title: 'new task #' + (lastTaskTemplate && lastTaskTemplate.taskTemplateId+1 || 1),
+                        description: '',
+                        isRequired: true
+                    };
+
+                    ThisComponent.isBusy = true;
+                    return learningPathTaskTemplates.createObject(_newTaskTemplate)
+                    .then(function(newTaskTemplate) {
+                        var _newEdge = {
+                            learningPathTemplateId: parentTaskTemplate.learningPathTemplateId,
+
+                            fromTaskTemplateId: parentTaskTemplate.learningPathTemplateId,
+                            toTaskTemplateId: newTaskTemplate.learningPathTemplateId,
+                        };
+                        return learningPathTaskDependencies.createObject(_newEdge)
+                    })
+                    .finally(function() {
+                        ThisComponent.isBusy = false;
+                    })
+                    .then(function() {
+                        // re-compute layout
+                        this.renderer.start();
+                        ThisComponent.page.invalidateView();
+                    })
+                    .catch(ThisComponent.page.handleError);
                 },
 
                 /**
                  *
                  */
                 addVirtualNode: function(settings) {
-                    taskSettings[_.first(taskTemplates).taskTemplateId] = {
-                        dynamics: {
-                            isStatic: true,
-                            initialPosition: new Springy.Vector(0, 0)
-                        }
-                    };
+                    // TOOD: !
+                    // this.taskSettings[_.first(taskTemplates).taskTemplateId] = {
+                    //     dynamics: {
+                    //         isStatic: true,
+                    //         initialPosition: new Springy.Vector(0, 0)
+                    //     }
+                    // };
                 }
             }),
 
@@ -118,7 +172,7 @@ module.exports = NoGapDef.component({
                     // ###############################################################
                     // LearningPath data
                     
-                    var learningPathTemplates = $scope.learningPathTemplates = Instance.LearningPathTemplate.learningPathTemplates;
+                    $scope.learningPathTemplates = Instance.LearningPathTemplate.learningPathTemplates;
 
                     // var allLearningPathViews = $scope.allLearningPathViews =
                     //     _.mapValues(learningPathTemplates.byId, function(learningPathTemplate) {
@@ -126,9 +180,9 @@ module.exports = NoGapDef.component({
                     //             learningPathTemplate: learningPathTemplate
                     //         });
                     //     });
-                    var allLearningPathViews = $scope.allLearningPathViews = [new ThisComponent.LearningPathView($scope, {
-                        learningPathTemplates: learningPathTemplates
-                    })];
+                    ThisComponent.learningPathView = $scope.learningPathView = new ThisComponent.LearningPathView($scope, {
+                        learningPathTemplates: Instance.LearningPathTemplate.learningPathTemplates
+                    });
 
 
                     // ###############################################################
@@ -159,17 +213,30 @@ module.exports = NoGapDef.component({
             // data "binding"
 
             /**
-             * Handling set of dependent data providers
+             * set of dependent data providers
              */
             dataProviders: {
-                LearningPathTemplate: {
-                    query: function() { return {}; },
+                learningPathTemplates: {
+                    compileReadQuery: function() { return null; },
+                },
+                learningPathTaskTemplates: {
+                    compileReadQuery: function() { return null; },
 
-                    onUpdate: function(templates) {
+                    onAddedObject: function(taskTemplate) {
+                        ThisComponent.learningPathView.taskSettings[taskTemplateId.taskTemplateId] = {
+                            dynamics: {
+                                dontAttractToCenter: true
+                            }
+                        };
+                    },
 
+                    onRemovedObject: function(taskTemplate) {
+                        delete ThisComponent.learningPathView.taskSettings[taskTemplateId.taskTemplateId];
                     }
-
-                }
+                },
+                learningPathTaskDependencies: {
+                    compileReadQuery: function() { return null; },
+                },
             },
             
             /**

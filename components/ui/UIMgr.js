@@ -402,8 +402,8 @@ module.exports = NoGapDef.component({
                 }
 
                 // patch component page object:
-                // add `page` property
-                component.page = page;
+                // add `page` and `ui` properties
+                component.page = component.ui = page;
 
                 // add `activatePage` method
                 Object.defineProperty(component, 'activatePage', {
@@ -1025,11 +1025,17 @@ module.exports = NoGapDef.component({
             onNewComponent: function(newComponent) {
                 // call `setupUI` on ui components
                 //console.log('comp ' + newComponent.Def.FullName + ' ' + !!newComponent.setupUI);
-                if (newComponent.setupUI) {
+
+                // declare all related component data
+                //      (increase chances of monomorphism in related call-sites)
+                newComponent.isUI = !!newComponent.setupUI;
+                newComponent.setupUI = newComponent.setupUI || null;
+                newComponent.componentEventHandlers = newComponent.componentEventHandlers || null;
+                newComponent.refreshAddressBar = null;
+
+                if (newComponent.isUI) {
                     newComponent.setupUI(this, app);
 
-                    // flag as UI newComponent
-                    newComponent.isUI = true;
                     newComponent.refreshAddressBar = Instance.UIMgr.updateAddressBar.bind(Instance.UIMgr, newComponent, true);
                 }
 

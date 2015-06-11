@@ -199,6 +199,7 @@ module.exports = NoGapDef.component({
                     }
                 });
             },
+            
 
             initHost: function(app, cfg) {
                 UserRole = Shared.User.UserRole;
@@ -209,7 +210,7 @@ module.exports = NoGapDef.component({
                 /**
                  * Min privilege level required to use the system.
                  */
-                this.config.minAccessRoleId = Shared.User.UserRole[this.config.minAccessRole] || Shared.User.UserRole.StandardUser;
+                this.config.minAccessRoleId = Shared.User.UserRole[this.config.minAccessRole] || Shared.User.UserRole.Student;
 
                 // some default config entries
                 this.config.externalUrl = app.externalUrl;

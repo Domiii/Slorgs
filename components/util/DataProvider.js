@@ -3,18 +3,18 @@
  * between MySql (through Sequelize) and the Client, via NoGap.
  * Cached data is not tracked by the other side, and needs to be sent over the wire explicitely.
  *
- * =How to use dataproviders=
+ * =How to use DataProviders=
  * There is no cache coherence (i.e. no data binding)
  * `readObject[s]` does generally retrieve less already cached objects. However, there are currently no guarantees, other than consistency.
  * 
  *
- * =How to declare dataproviders=
- * 1. A component can declare dataproviders using the `Base.DataProviders` property.
+ * =How to declare DataProviders=
+ * 1. A component can declare DataProviders using the `Base.DataProviders` property.
  * 2. You can add `InstanceProto` to define instance members on all fetched objects available both on `Client` and `Host`.
  * 3. You can customize DataProvider behavior, by providing the `members` property in your DataProvider declaration.
  *  -> E.g. if you want to add associations or access checks, you can override `compileReadObjectsQuery`.
  *  -> E.g. for custom post-query processing, you can override `filterReadObject[s]` (Host).
- *  -> E.g. you can override `onAddedObject` `onRemovedObject` (Client).
+ *  -> E.g. you can override `onAddedObject` `onRemovedObject`.
  * 4. There are different `CacheEndpoint` classes for `Client` and `Host`.
  * 5. Many methods (such as `getModel` and `compileReadObjectsQuery`) are Host-only.
  *      If they contain sensitive code, you can just declare them in `Host.Caches` instead of `Base`.
@@ -690,8 +690,6 @@ module.exports = NoGapDef.component({
                 // ctor
                 this.name = dataProviderName;
                 this._dataProviderDescriptor = dataProviderDescriptor;
-
-                !!!!TODO: re-think dataProviderEventHandlers vs. better data-binding!!!!
                 
                 /**
                  * This DataProvider's events
@@ -812,7 +810,9 @@ module.exports = NoGapDef.component({
                     if (!this.hasMemorySet()) return null;
 
                     if (queryInput) {
-                        this.Instance.DataProvider.Tools.handleError('`getObjectsNow` must be overridden to support custom query input: ' + this.name);
+                        return Promise.reject(makeError('error.internal',
+                            '`getObjectsNow` must be overridden to support custom query input in DataProvider `' + 
+                            this.name + '` - ' + queryInput));
                     }
 
                     // TODO: Support query language to also support general queryInputs on the DataProvider/cache
@@ -1771,8 +1771,12 @@ module.exports = NoGapDef.component({
      *
      */
     Client: NoGapDef.defClient(function(Tools, Instance, Context) {
+        var ThisComponent;
+
         return {
             __ctor: function() {
+                ThisComponent = this;
+
                 // ################################################################################################
                 // Client-side DataProvider endpoint implementation
 
@@ -1960,11 +1964,54 @@ module.exports = NoGapDef.component({
             onNewComponent: function(component) {
                 this._autoInstallComponentDataProviders(component);
                 this._installDataProviderEventHandlers(component);
+
+                this._installDataBindings(component);
             },
 
 
             // ################################################################################################
             // Client-side DataProvider data-binding
+
+            _installDataBindings: function(component) {
+                // declare all related component data
+                //      (increase chances of monomorphism in related call-sites)
+                component.dataProviders = component.dataProviders || null;
+                component.refreshData = component.refreshData || null;
+                component.refreshPaused = false;
+
+
+                // register handlers for dataProviders
+                if (component.dataProviders) {
+                    if (component.setupUI) {
+                        // TODO: Don't touch UI code here! No clear separation of concerns...
+
+                        // it's a UI component
+                        component.onDataUpdate = component.onDataUpdate || function(data) {
+                            // update view
+                            this.ui.invalidateView();
+                        };
+                        component.onDataUpdateFailed = component.onDataUpdateFailed || function(err) {
+                            // handle error
+                            this.ui.handleError(err);
+                        };
+                    }
+
+                    for (var dataProviderName in component.dataProviders) {
+                        var settings = component.dataProviders[dataProviderName];
+                        var query = settings && settings.compileReadQuery;
+                        settings._dataProvider = ThisComponent.getDataProvider(dataProviderName);
+                        console.assert(settings._dataProvider,
+                            'Invalid DataProvider name `' + dataProviderName + '` in `' + component + '.dataProviders`.');
+
+                        settings.compileReadQuery = query instanceof Function && query || function() {
+                            return this;
+                        }.bind(query || null);
+                    }
+                }
+
+                component.onDataUpdate = component.onDataUpdate && component.onDataUpdate.bind(component) || null;
+                component.onDataUpdateFailed = component.onDataUpdateFailed && component.onDataUpdateFailed.bind(component) || null;
+            },
 
             /**
              * This is currently called on page components when they are activated.
@@ -1974,13 +2021,18 @@ module.exports = NoGapDef.component({
              * to reduce overhead.
              */
             startComponentDataBinding: function(component) {
-                if (!component.refreshData) return;
+                if (!component.refreshData && 
+                    !component.dataProviders) return;
 
+                ThisComponent._refreshComponentData(component);
+            },
+
+            _refreshComponentData: function(component) {
                 var minRefreshDelay = 300;
                 var delay = component.refreshDelay || Instance.AppConfig.getValue('defaultPageRefreshDelay');
                 if (isNaN(delay) || delay < minRefreshDelay) {
                     // sanity check
-                    console.error('`refreshDelay` too fast for page: ' + page.name);
+                    console.error('`refreshDelay` too fast for component: ' + component);
                     delay = minRefreshDelay;
                 }
                 
@@ -1988,18 +2040,48 @@ module.exports = NoGapDef.component({
                     Promise.resolve()
                     .then(function() {
                         if (!component.refreshPaused) {
-                            return component.refreshData();
+                            return ThisComponent._refreshComponentDataNow(component);
                         }
                     })
                     .finally(function() {
                         // repeat
-                        ThisComponent._doRefresh(component);
+                        ThisComponent._refreshComponentData(component);
                     });
                 }, delay);
 
-                component.refreshData();
+                ThisComponent._refreshComponentDataNow(component);
 
                 //return component.refreshData();
+            },
+
+            _refreshComponentDataNow: function(component) {
+                var promises = [];
+                if (component.refreshData) {
+                    promises.push(component.refreshData());
+                }
+                if (component.dataProviders) {
+                    for (var dataProviderName in component.dataProviders) {
+                        var settings = component.dataProviders[dataProviderName];
+                        var queryInput = settings.compileReadQuery();
+                        var promise = settings._dataProvider.readObjects(queryInput);
+                        promises.push(promise);
+
+                        if (promise.onDataUpdate) {
+                            promise.then(function() {
+
+                            });
+                        }
+                    }
+                }
+
+                var promise = Promise.all(promises);
+                if (component.onDataUpdate) {
+                    promise = promise.then(component.onDataUpdate);
+                }
+                if (component.onDataUpdateFailed) {
+                    promise = promise.catch(component.onDataUpdateFailed);
+                }
+                return promise;
             },
 
             stopComponentDataBinding: function(component) {

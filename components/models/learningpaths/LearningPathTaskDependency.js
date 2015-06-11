@@ -51,8 +51,16 @@ module.exports = NoGapDef.component({
                         type: DataTypes.INTEGER.UNSIGNED
                     },
 
-                    fromTaskTemplateId: DataTypes.INTEGER.UNSIGNED,
-                    toTaskTemplateId: DataTypes.INTEGER.UNSIGNED
+                    fromTaskTemplateId: {
+                        type: DataTypes.INTEGER.UNSIGNED,
+                        allowNull: false
+                    },
+
+                    toTaskTemplateId: {
+                        type: DataTypes.INTEGER.UNSIGNED,
+                        allowNull: false
+                    },
+                    
                     // startTime: 
                     // endTime:
 
