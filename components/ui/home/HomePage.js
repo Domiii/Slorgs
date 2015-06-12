@@ -56,15 +56,17 @@ module.exports = NoGapDef.component({
                 // ctor
                 this.$scope = $scope;
                 _.merge(this, settings);
-                this.tasksOpen = {};
-                this.taskSettings = {};
+                this.allTaskSettings = {
+                    list: [],
+                    byId: {}
+                };
 
                 // create new graph
                 this.graph = new Springy.Graph()
             },{
                 // methods
-                toggleTask: function(taskTemplate) {
-                    this.tasksOpen[taskTemplate.taskTemplateId] = !this.tasksOpen[taskTemplate.taskTemplateId];
+                toggleTaskOpen: function(taskSettings) {
+                    taskSettings.isOpen = !taskSettings.isOpen;
 
                     // re-compute layout
                     this.renderer.start();
@@ -84,6 +86,7 @@ module.exports = NoGapDef.component({
 
                     ThisComponent.isBusy = true;
                     return learningPathTemplates.createObject(_newLearningPathTemplate)
+                    .bind(this)
                     .then(function(newLearningPathTemplate) {
                         // add first task to learning path
                         var _newTaskTemplate = {
@@ -121,6 +124,7 @@ module.exports = NoGapDef.component({
 
                     ThisComponent.isBusy = true;
                     return learningPathTaskTemplates.createObject(_newTaskTemplate)
+                    .bind(this)
                     .then(function(newTaskTemplate) {
                         var _newEdge = {
                             learningPathTemplateId: parentTaskTemplate.learningPathTemplateId,
@@ -146,7 +150,7 @@ module.exports = NoGapDef.component({
                  */
                 addVirtualNode: function(settings) {
                     // TOOD: !
-                    // this.taskSettings[_.first(taskTemplates).taskTemplateId] = {
+                    // this.allTaskSettings.ById[_.first(taskTemplates).taskTemplateId] = {
                     //     dynamics: {
                     //         isStatic: true,
                     //         initialPosition: new Springy.Vector(0, 0)
@@ -173,6 +177,7 @@ module.exports = NoGapDef.component({
                     // LearningPath data
                     
                     $scope.learningPathTemplates = Instance.LearningPathTemplate.learningPathTemplates;
+                    $scope.learningPathTaskDependencies = Instance.LearningPathTaskDependency.learningPathTaskDependencies;
 
                     // var allLearningPathViews = $scope.allLearningPathViews =
                     //     _.mapValues(learningPathTemplates.byId, function(learningPathTemplate) {
@@ -215,7 +220,7 @@ module.exports = NoGapDef.component({
             /**
              * set of dependent data providers
              */
-            dataProviders: {
+            dataBindings: {
                 learningPathTemplates: {
                     compileReadQuery: function() { return null; },
                 },
@@ -223,17 +228,23 @@ module.exports = NoGapDef.component({
                     compileReadQuery: function() { return null; },
 
                     onAddedObject: function(taskTemplate) {
-                        ThisComponent.learningPathView.taskSettings[taskTemplateId.taskTemplateId] = {
+                        var newSettings = {
+                            task: taskTemplate,
                             dynamics: {
-                                dontAttractToCenter: true
+                                //dontAttractToCenter: true
                             }
                         };
+
+                        var allTaskSettings = ThisComponent.learningPathView.allTaskSettings;
+                        allTaskSettings.list.push(newSettings);
+                        allTaskSettings.byId[taskTemplate.taskTemplateId] = newSettings;
                     },
 
                     onRemovedObject: function(taskTemplate) {
-                        delete ThisComponent.learningPathView.taskSettings[taskTemplateId.taskTemplateId];
+                        delete ThisComponent.learningPathView.allTaskSettings[taskTemplate.taskTemplateId];
                     }
                 },
+
                 learningPathTaskDependencies: {
                     compileReadQuery: function() { return null; },
                 },

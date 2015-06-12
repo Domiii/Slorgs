@@ -89,15 +89,6 @@ module.exports = NoGapDef.component({
                     idProperty: 'learningPathTemplateId',
 
                     members: {
-                        filterClientObject: function(user) {
-                            // remove sensitive information before sending to client
-                            delete user.secretSalt;
-                            delete user.sharedSecret;
-                            delete user.facebookToken;
-
-                            return user;
-                        },
-
                         onRemovedObject: function(user) {
                         },
 

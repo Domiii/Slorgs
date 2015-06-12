@@ -539,3 +539,7 @@ title, tt, u, var {
 .darkgold {
   color: #DAA520;
 }
+.dark {
+  background: black;
+  color: white;
+}

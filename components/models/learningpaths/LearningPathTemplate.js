@@ -225,10 +225,6 @@ module.exports = NoGapDef.component({
             DataProviders: {
                 learningPathTemplates: {
                     members: {
-                        filterClientObject: function(learningPathTemplate) {
-                            // remove sensitive information before sending to client
-                        },
-
                         /**
                          * 
                          */

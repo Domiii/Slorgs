@@ -901,6 +901,18 @@ module.exports = NoGapDef.component({
                 // ################################################################################################
                 // In-memory set management
 
+                _notifyAddedObjectActiveComponents: function(object) {
+
+                },
+
+                _notifyChangedObjectActiveComponents: function(object) {
+
+                },
+
+                _notifyRemovedObjectActiveComponents: function(object) {
+
+                },
+
                 /**
                  * Called when given object has been added to cache.
                  */
@@ -916,7 +928,7 @@ module.exports = NoGapDef.component({
                 /**
                  * Called after the given object updates have been applied to the cache.
                  */
-                onCacheChanged: function(newData) {
+                onDataAdded: function(newData) {
                 },
 
                 /**
@@ -958,6 +970,7 @@ module.exports = NoGapDef.component({
                         }
 
                         // notify
+                        this._notifyRemovedObjectActiveComponents(obj);
                         this.onRemovedObject(obj);
                         this.events.removed.fire(obj);
                     }
@@ -1070,6 +1083,8 @@ module.exports = NoGapDef.component({
                                 if (this.indices) {
                                     this.indices._addInstance(obj);
                                 }
+
+                                this._notifyAddedObjectActiveComponents(obj);
                                 
                                 // fire client-side only event
                                 this.onAddedObject(obj);
@@ -1091,6 +1106,8 @@ module.exports = NoGapDef.component({
                                     this.indices._addInstance(obj);
                                 }
 
+                                this._notifyChangedObjectActiveComponents(obj);
+
                                 // override new object with reference to old one
                                 newData[iObj] = obj;
                             }
@@ -1098,9 +1115,6 @@ module.exports = NoGapDef.component({
                     }
 
                     //console.log('Updated cache: ' + this.name);
-
-                    // call internal callback
-                    this.onCacheChanged(newData);
 
                     // fire "updated" event
                     this.events.updated.fire(newData, queryInput, this);
@@ -1949,7 +1963,47 @@ module.exports = NoGapDef.component({
 
                             return Promise.reject(err);
                         });
-                    }
+                    },
+
+                    
+                    // ################################################################################################
+                    // Properly notify listeners
+
+                    _notifyAddedObjectActiveComponents: function(obj) {
+                        ThisComponent.currentlyActiveComponents.forEach(function(component) {
+                            var settings = component.dataBindings && 
+                                component.dataBindings[this.name];
+                            if (settings) {
+                                if (settings.onAddedObject) {
+                                    settings.onAddedObject(obj);
+                                }
+                            }
+                        }.bind(this));
+                    },
+
+                    _notifyChangedObjectActiveComponents: function(obj) {
+                        ThisComponent.currentlyActiveComponents.forEach(function(component) {
+                            var settings = component.dataBindings && 
+                                component.dataBindings[this.name];
+                            if (settings) {
+                                if (settings.onChangedObject) {
+                                    settings.onChangedObject(obj);
+                                }
+                            }
+                        }.bind(this));
+                    },
+
+                    _notifyRemovedObjectActiveComponents: function(obj) {
+                        ThisComponent.currentlyActiveComponents.forEach(function(component) {
+                            var settings = component.dataBindings && 
+                                component.dataBindings[this.name];
+                            if (settings) {
+                                if (settings.onRemovedObject) {
+                                    settings.onRemovedObject(obj);
+                                }
+                            }
+                        }.bind(this));
+                    },
                 });
             },
 
@@ -1973,15 +2027,17 @@ module.exports = NoGapDef.component({
             // Client-side DataProvider data-binding
 
             _installDataBindings: function(component) {
+                this.currentlyActiveComponents = [];
+
                 // declare all related component data
                 //      (increase chances of monomorphism in related call-sites)
-                component.dataProviders = component.dataProviders || null;
+                component.dataBindings = component.dataBindings || null;
                 component.refreshData = component.refreshData || null;
                 component.refreshPaused = false;
 
 
-                // register handlers for dataProviders
-                if (component.dataProviders) {
+                // register handlers for dataBindings
+                if (component.dataBindings) {
                     if (component.setupUI) {
                         // TODO: Don't touch UI code here! No clear separation of concerns...
 
@@ -1996,12 +2052,12 @@ module.exports = NoGapDef.component({
                         };
                     }
 
-                    for (var dataProviderName in component.dataProviders) {
-                        var settings = component.dataProviders[dataProviderName];
+                    for (var dataProviderName in component.dataBindings) {
+                        var settings = component.dataBindings[dataProviderName];
                         var query = settings && settings.compileReadQuery;
                         settings._dataProvider = ThisComponent.getDataProvider(dataProviderName);
                         console.assert(settings._dataProvider,
-                            'Invalid DataProvider name `' + dataProviderName + '` in `' + component + '.dataProviders`.');
+                            'Invalid DataProvider name `' + dataProviderName + '` in `' + component + '.dataBindings`.');
 
                         settings.compileReadQuery = query instanceof Function && query || function() {
                             return this;
@@ -2022,12 +2078,14 @@ module.exports = NoGapDef.component({
              */
             startComponentDataBinding: function(component) {
                 if (!component.refreshData && 
-                    !component.dataProviders) return;
+                    !component.dataBindings) return;
 
                 ThisComponent._refreshComponentData(component);
             },
 
             _refreshComponentData: function(component) {
+                this.currentlyActiveComponents.push(component);
+
                 var minRefreshDelay = 300;
                 var delay = component.refreshDelay || Instance.AppConfig.getValue('defaultPageRefreshDelay');
                 if (isNaN(delay) || delay < minRefreshDelay) {
@@ -2059,18 +2117,12 @@ module.exports = NoGapDef.component({
                 if (component.refreshData) {
                     promises.push(component.refreshData());
                 }
-                if (component.dataProviders) {
-                    for (var dataProviderName in component.dataProviders) {
-                        var settings = component.dataProviders[dataProviderName];
+                if (component.dataBindings) {
+                    for (var dataProviderName in component.dataBindings) {
+                        var settings = component.dataBindings[dataProviderName];
                         var queryInput = settings.compileReadQuery();
                         var promise = settings._dataProvider.readObjects(queryInput);
                         promises.push(promise);
-
-                        if (promise.onDataUpdate) {
-                            promise.then(function() {
-
-                            });
-                        }
                     }
                 }
 
@@ -2085,6 +2137,8 @@ module.exports = NoGapDef.component({
             },
 
             stopComponentDataBinding: function(component) {
+                _.remove(this.currentlyActiveComponents, component);
+
                 // disable running timer(s)
                 if (component._refreshTimer) {
                     clearTimeout(component._refreshTimer);
@@ -2123,7 +2177,7 @@ module.exports = NoGapDef.component({
                 };
 
                 // collect all requests
-                // NOTE: Currently, we can only request objects from dataProviders, by list of ids
+                // NOTE: Currently, we can only request objects from DataProviders, by list of ids
                 for (var i = 0; i < entries.length; ++i) {
                     var entry = entries[i];
                     if (entry.hasDataArrived || entry._hasDataBeenRequested) continue;

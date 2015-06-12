@@ -194,7 +194,7 @@
                 // add new node
                 var id = $element.attr('id');
                 if (!id) {
-                    throw new Error('invalid `flexgraph-node` - does not have an id set');
+                    throw new Error('invalid `flexgraph-node` - is missing id');
                 }
 
                 var nodeData = allNodeData.data = allNodeData.dynamics || {};
