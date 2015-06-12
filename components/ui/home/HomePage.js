@@ -242,6 +242,14 @@ module.exports = NoGapDef.component({
 
                     onRemovedObject: function(taskTemplate) {
                         delete ThisComponent.learningPathView.allTaskSettings[taskTemplate.taskTemplateId];
+                    },
+
+                    onCacheChanged: function() {
+                        // TODO: Hook this up
+                        // TODO: Topological sorting
+                        // TODO: Virtual nodes for containing and constraining the graph
+
+                        var taskTemplates = Instance.LearningPathTaskTemplate.learningPathTaskTemplates;
                     }
                 },
 
