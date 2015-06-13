@@ -913,6 +913,9 @@ module.exports = NoGapDef.component({
 
                 },
 
+                _notifyCacheChangedActiveComponents: function(newObjects, queryInput) {
+                },
+
                 /**
                  * Called when given object has been added to cache.
                  */
@@ -971,6 +974,7 @@ module.exports = NoGapDef.component({
 
                         // notify
                         this._notifyRemovedObjectActiveComponents(obj);
+                        this._notifyCacheChangedActiveComponents(null, null);
                         this.onRemovedObject(obj);
                         this.events.removed.fire(obj);
                     }
@@ -1115,6 +1119,8 @@ module.exports = NoGapDef.component({
                     }
 
                     //console.log('Updated cache: ' + this.name);
+
+                    this._notifyCacheChangedActiveComponents(newData, queryInput);
 
                     // fire "updated" event
                     this.events.updated.fire(newData, queryInput, this);
@@ -2004,6 +2010,18 @@ module.exports = NoGapDef.component({
                             }
                         }.bind(this));
                     },
+
+                    _notifyCacheChangedActiveComponents: function(newObjects, queryInput) {
+                        ThisComponent.currentlyActiveComponents.forEach(function(component) {
+                            var settings = component.dataBindings && 
+                                component.dataBindings[this.name];
+                            if (settings) {
+                                if (settings.onCacheChanged) {
+                                    settings.onCacheChanged(newObjects, queryInput);
+                                }
+                            }
+                        }.bind(this));
+                    }
                 });
             },
 

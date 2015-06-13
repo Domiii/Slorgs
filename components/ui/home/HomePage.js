@@ -61,6 +61,9 @@ module.exports = NoGapDef.component({
                     byId: {}
                 };
 
+                this._updateTimer = null;
+                this._virtualNodes = [];
+
                 // create new graph
                 this.graph = new Springy.Graph()
             },{
@@ -143,6 +146,34 @@ module.exports = NoGapDef.component({
                         ThisComponent.page.invalidateView();
                     })
                     .catch(ThisComponent.page.handleError);
+                },
+
+                onGraphUpdate: function() {
+                    if (this._updateTimer) return;
+
+                    this._updateTimer = setTimeout(function() {
+                        this._updateTimer = null;
+                        this._recomputeVirtualForces();
+                    }.bind(this));
+                },
+
+                /**
+                 * Introduce (or adjust) virtual nodes to add certain structure to the graph.
+                 * We currently use virtual nodes to:
+                 *
+                 * 1. Layout grpahs from top to bottom
+                 * 2. Keep the set of "current tasks to do" close to each other
+                 */
+                _recomputeVirtualForces: function() {
+                    // TODO: Topological sorting? At least we need depth information?
+                    // TODO: Virtual nodes for containing and constraining the graph
+
+                    // TODO: Where to put the graph methods?
+
+                    var taskTemplates = Instance.LearningPathTaskTemplate.learningPathTaskTemplates;
+
+                    // virtual node types for: Roots, leafs, "important" tasks
+
                 },
 
                 /**
@@ -245,16 +276,16 @@ module.exports = NoGapDef.component({
                     },
 
                     onCacheChanged: function() {
-                        // TODO: Hook this up
-                        // TODO: Topological sorting
-                        // TODO: Virtual nodes for containing and constraining the graph
-
-                        var taskTemplates = Instance.LearningPathTaskTemplate.learningPathTaskTemplates;
+                        ThisComponent.learningPathView.onGraphUpdate();
                     }
                 },
 
                 learningPathTaskDependencies: {
                     compileReadQuery: function() { return null; },
+
+                    onCacheChanged: function() {
+                        ThisComponent.learningPathView.onGraphUpdate();
+                    }
                 },
             },
             
