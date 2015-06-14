@@ -159,7 +159,7 @@ module.exports = {
             'models/core/AppConfig',
             'models/core/User',
 
-            'models/learningpaths/LearningPathTemplate',
+            'models/learninggraphs/LearningGraphTemplate',
 
             // misc utilities
             'util/Auth',
@@ -182,7 +182,7 @@ module.exports = {
             'ui/account/AccountPage',
 
             // other UI elements:
-            'ui/ui-elements/LearningPathListElement'
+            'ui/ui-elements/LearningGraphListElement'
         ]
     },
 };

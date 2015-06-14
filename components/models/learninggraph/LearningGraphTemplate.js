@@ -1,5 +1,5 @@
 /**
- * LearningPathTemplate
+ * LearningGraphTemplate
  */
 "use strict";
 
@@ -8,8 +8,8 @@ var NoGapDef = require('nogap').Def;
 
 module.exports = NoGapDef.component({
     Includes: [
-        'LearningPathTaskTemplate',
-        'LearningPathTaskDependency'
+        'LearningGraphTaskTemplate',
+        'LearningGraphTaskDependency'
     ],
 
     Base: NoGapDef.defBase(function(SharedTools, Shared, SharedContext) {
@@ -19,8 +19,8 @@ module.exports = NoGapDef.component({
             // DataProviders
 
             DataProviders: {
-                learningPathTemplates: {
-                    idProperty: 'learningPathTemplateId',
+                learningGraphTemplates: {
+                    idProperty: 'learningGraphTemplateId',
 
                     hasHostMemorySet: 1,
 
@@ -55,9 +55,9 @@ module.exports = NoGapDef.component({
             	__ctor: function() {
                 },
 
-            	createLearningPathTemplate: function(lpTemplateDef) {
+            	createLearningGraphTemplate: function(lpTemplateDef) {
             		// simulate DB insertion
-            		lpTemplateDef.learningPathTemplateId = ++lastId;
+            		lpTemplateDef.learningGraphTemplateId = ++lastId;
 
             		if (lpTemplateDef.taskTemplates) {
             			var taskTemplates = lpTemplateDef.taskTemplates;
@@ -76,7 +76,7 @@ module.exports = NoGapDef.component({
                             taskTemplatesById[taskTemplate.taskTemplateId] = taskTemplate;
                             taskTemplate.taskTemplateId = ++lastTaskTemplateId;
 
-                            taskTemplate.learningPathTemplateId = lpTemplateDef.learningPathTemplateId;
+                            taskTemplate.learningGraphTemplateId = lpTemplateDef.learningGraphTemplateId;
                         }
 
                         // prepare adjacency list for task dependency graph
@@ -95,8 +95,8 @@ module.exports = NoGapDef.component({
                         }
             		}
 
-                    this.learningPathTemplates.list.push(lpTemplateDef);
-                    this.learningPathTemplates.byId[taskTemplate.learningPathTemplateId] = lpTemplateDef;
+                    this.learningGraphTemplates.list.push(lpTemplateDef);
+                    this.learningGraphTemplates.byId[taskTemplate.learningGraphTemplateId] = lpTemplateDef;
 
             		return Promise.resolve(lpTemplateDef);
             	},
@@ -113,7 +113,7 @@ module.exports = NoGapDef.component({
 	                }];
 
 
-	                this.createLearningPathTemplate({
+	                this.createLearningGraphTemplate({
 	                    title: 'Scratch: Getting started!',
 	                    description: 'hello',
 	                    isEnabled: true,
@@ -150,7 +150,7 @@ module.exports = NoGapDef.component({
                         usersWithAccess: [],
                         groupsWithAccess: [],
 
-	                    learningPathOutcomes: [{
+	                    learningGraphOutcomes: [{
 	                        // TODO?
 	                    }]
 	                });
@@ -176,8 +176,8 @@ module.exports = NoGapDef.component({
                 /**
                  * User object definition.
                  */
-                return sequelize.define('LearningPathTemplate', {
-                    learningPathTemplateId: {type: DataTypes.INTEGER.UNSIGNED, primaryKey: true, autoIncrement: true},
+                return sequelize.define('LearningGraphTemplate', {
+                    learningGraphTemplateId: {type: DataTypes.INTEGER.UNSIGNED, primaryKey: true, autoIncrement: true},
 
                     title: DataTypes.STRING(256),
                     description: DataTypes.TEXT,
@@ -188,26 +188,26 @@ module.exports = NoGapDef.component({
 
                 },{
                     freezeTableName: true,
-                    tableName: 'LearningPathTemplate',
+                    tableName: 'LearningGraphTemplate',
 
                     classMethods: {
                         onBeforeSync: function(models) {
-                            models.LearningPathTaskTemplate.belongsTo(models.LearningPathTemplate,
-                                { foreignKey: 'learningPathTemplateId' , as: 'learningPathTemplate', foreignKeyConstraint: true,
+                            models.LearningGraphTaskTemplate.belongsTo(models.LearningGraphTemplate,
+                                { foreignKey: 'learningGraphTemplateId' , as: 'learningGraphTemplate', foreignKeyConstraint: true,
                                     onDelete: 'CASCADE', onUpdate: 'CASCADE'});
-                            models.LearningPathTemplate.hasMany(models.LearningPathTaskTemplate,
-                                { foreignKey: 'learningPathTemplateId' , as: 'taskTemplates', constraints: false});
+                            models.LearningGraphTemplate.hasMany(models.LearningGraphTaskTemplate,
+                                { foreignKey: 'learningGraphTemplateId' , as: 'taskTemplates', constraints: false});
 
-                            models.LearningPathTaskDependency.belongsTo(models.LearningPathTemplate, 
-                                { foreignKey: 'learningPathTemplateId' , as: 'learningPathTemplate', foreignKeyConstraint: true,
+                            models.LearningGraphTaskDependency.belongsTo(models.LearningGraphTemplate, 
+                                { foreignKey: 'learningGraphTemplateId' , as: 'learningGraphTemplate', foreignKeyConstraint: true,
                                     onDelete: 'CASCADE', onUpdate: 'CASCADE'});
-                            models.LearningPathTemplate.hasMany(models.LearningPathTaskDependency, 
-                                { foreignKey: 'learningPathTemplateId' , as: 'learningPathTaskDependencies', constraints: false});
+                            models.LearningGraphTemplate.hasMany(models.LearningGraphTaskDependency, 
+                                { foreignKey: 'learningGraphTemplateId' , as: 'learningGraphTaskDependencies', constraints: false});
 
                             // This.includes = [{
-                            //     model: models.LearningPathTaskTemplate,
+                            //     model: models.LearningGraphTaskTemplate,
                             // },{
-                            //     model: models.LearningPathTaskDependency,
+                            //     model: models.LearningGraphTaskDependency,
                             // }];
                         },
 
@@ -223,7 +223,7 @@ module.exports = NoGapDef.component({
 
             
             DataProviders: {
-                learningPathTemplates: {
+                learningGraphTemplates: {
                     members: {
                         /**
                          * 
@@ -235,7 +235,7 @@ module.exports = NoGapDef.component({
                             }
 
                             var queryData = {
-                                include: Shared.LearningPathTemplate.includes,
+                                include: Shared.LearningGraphTemplate.includes,
                                 where: {}
                             };
 
@@ -244,7 +244,7 @@ module.exports = NoGapDef.component({
 
                         compileReadObjectsQuery: function(queryInput, ignoreAccessCheck, sendToClient) {
                             var queryData = {
-                                include: Shared.LearningPathTemplate.includes,
+                                include: Shared.LearningGraphTemplate.includes,
                                 where: {}
                             };
                             

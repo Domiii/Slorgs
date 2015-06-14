@@ -52,7 +52,7 @@ module.exports = NoGapDef.component({
                 ThisComponent.allGraphData = {};
             },
 
-            LearningPathView: squishy.createClass(function($scope, settings) {
+            LearningGraphView: squishy.createClass(function($scope, settings) {
                 // ctor
                 this.$scope = $scope;
                 _.merge(this, settings);
@@ -75,12 +75,12 @@ module.exports = NoGapDef.component({
                     this.renderer.start();
                 },
 
-                addLearningPathTemplate: function() {
-                    var learningPathTemplates = Instance.LearningPathTemplate.learningPathTemplates;
-                    var learningPathTaskTemplates = Instance.LearningPathTaskTemplate.learningPathTaskTemplates;
-                    var lastTaskTemplate = _.last(learningPathTaskTemplates.list);
+                addLearningGraphTemplate: function() {
+                    var learningGraphTemplates = Instance.LearningGraphTemplate.learningGraphTemplates;
+                    var learningGraphTaskTemplates = Instance.LearningGraphTaskTemplate.learningGraphTaskTemplates;
+                    var lastTaskTemplate = _.last(learningGraphTaskTemplates.list);
 
-                    var _newLearningPathTemplate = {
+                    var _newLearningGraphTemplate = {
                         title: 'new learning path',
                         description: '',
                         isEnabled: false,
@@ -88,18 +88,18 @@ module.exports = NoGapDef.component({
                     };
 
                     ThisComponent.isBusy = true;
-                    return learningPathTemplates.createObject(_newLearningPathTemplate)
+                    return learningGraphTemplates.createObject(_newLearningGraphTemplate)
                     .bind(this)
-                    .then(function(newLearningPathTemplate) {
+                    .then(function(newLearningGraphTemplate) {
                         // add first task to learning path
                         var _newTaskTemplate = {
-                            learningPathTemplateId: newLearningPathTemplate.learningPathTemplateId,
+                            learningGraphTemplateId: newLearningGraphTemplate.learningGraphTemplateId,
 
                             title: 'new task #' + (lastTaskTemplate && lastTaskTemplate.taskTemplateId+1 || 1),
                             description: '',
                             isRequired: true
                         };
-                        return learningPathTaskTemplates.createObject(_newTaskTemplate)
+                        return learningGraphTaskTemplates.createObject(_newTaskTemplate)
                     })
                     .finally(function() {
                         ThisComponent.isBusy = false;
@@ -113,12 +113,12 @@ module.exports = NoGapDef.component({
                 },
 
                 addChildTask: function(parentTaskTemplate) {
-                    var learningPathTaskTemplates = Instance.LearningPathTaskTemplate.learningPathTaskTemplates;
-                    var learningPathTaskDependencies = Instance.LearningPathTaskDependency.learningPathTaskDependencies;
-                    var lastTaskTemplate = _.last(learningPathTaskTemplates.list);
+                    var learningGraphTaskTemplates = Instance.LearningGraphTaskTemplate.learningGraphTaskTemplates;
+                    var learningGraphTaskDependencies = Instance.LearningGraphTaskDependency.learningGraphTaskDependencies;
+                    var lastTaskTemplate = _.last(learningGraphTaskTemplates.list);
 
                     var _newTaskTemplate = {
-                        learningPathTemplateId: parentTaskTemplate.learningPathTemplateId,
+                        learningGraphTemplateId: parentTaskTemplate.learningGraphTemplateId,
 
                         title: 'new task #' + (lastTaskTemplate && lastTaskTemplate.taskTemplateId+1 || 1),
                         description: '',
@@ -126,16 +126,16 @@ module.exports = NoGapDef.component({
                     };
 
                     ThisComponent.isBusy = true;
-                    return learningPathTaskTemplates.createObject(_newTaskTemplate)
+                    return learningGraphTaskTemplates.createObject(_newTaskTemplate)
                     .bind(this)
                     .then(function(newTaskTemplate) {
                         var _newEdge = {
-                            learningPathTemplateId: parentTaskTemplate.learningPathTemplateId,
+                            learningGraphTemplateId: parentTaskTemplate.learningGraphTemplateId,
 
-                            fromTaskTemplateId: parentTaskTemplate.learningPathTemplateId,
-                            toTaskTemplateId: newTaskTemplate.learningPathTemplateId,
+                            fromTaskTemplateId: parentTaskTemplate.learningGraphTemplateId,
+                            toTaskTemplateId: newTaskTemplate.learningGraphTemplateId,
                         };
-                        return learningPathTaskDependencies.createObject(_newEdge)
+                        return learningGraphTaskDependencies.createObject(_newEdge)
                     })
                     .finally(function() {
                         ThisComponent.isBusy = false;
@@ -168,9 +168,7 @@ module.exports = NoGapDef.component({
                     // TODO: Topological sorting? At least we need depth information?
                     // TODO: Virtual nodes for containing and constraining the graph
 
-                    // TODO: Where to put the graph methods?
-
-                    var taskTemplates = Instance.LearningPathTaskTemplate.learningPathTaskTemplates;
+                    var taskTemplates = Instance.LearningGraphTaskTemplate.learningGraphTaskTemplates;
 
                     // virtual node types for: Roots, leafs, "important" tasks
 
@@ -205,24 +203,24 @@ module.exports = NoGapDef.component({
 
 
                     // ###############################################################
-                    // LearningPath data
+                    // LearningGraph data
                     
-                    $scope.learningPathTemplates = Instance.LearningPathTemplate.learningPathTemplates;
-                    $scope.learningPathTaskDependencies = Instance.LearningPathTaskDependency.learningPathTaskDependencies;
+                    $scope.learningGraphTemplates = Instance.LearningGraphTemplate.learningGraphTemplates;
+                    $scope.learningGraphTaskDependencies = Instance.LearningGraphTaskDependency.learningGraphTaskDependencies;
 
-                    // var allLearningPathViews = $scope.allLearningPathViews =
-                    //     _.mapValues(learningPathTemplates.byId, function(learningPathTemplate) {
-                    //         return new ThisComponent.LearningPathView($scope, {
-                    //             learningPathTemplate: learningPathTemplate
+                    // var allLearningGraphViews = $scope.allLearningGraphViews =
+                    //     _.mapValues(learningGraphTemplates.byId, function(learningGraphTemplate) {
+                    //         return new ThisComponent.LearningGraphView($scope, {
+                    //             learningGraphTemplate: learningGraphTemplate
                     //         });
                     //     });
-                    ThisComponent.learningPathView = $scope.learningPathView = new ThisComponent.LearningPathView($scope, {
-                        learningPathTemplates: Instance.LearningPathTemplate.learningPathTemplates
+                    ThisComponent.learningGraphView = $scope.learningGraphView = new ThisComponent.LearningGraphView($scope, {
+                        learningGraphTemplates: Instance.LearningGraphTemplate.learningGraphTemplates
                     });
 
 
                     // ###############################################################
-                    // LearningPath other methods
+                    // LearningGraph other methods
 
                     $scope.toggleEditMode = function() {
                         this.editing = !this.editing;
@@ -252,10 +250,10 @@ module.exports = NoGapDef.component({
              * set of dependent data providers
              */
             dataBindings: {
-                learningPathTemplates: {
+                learningGraphTemplates: {
                     compileReadQuery: function() { return null; },
                 },
-                learningPathTaskTemplates: {
+                learningGraphTaskTemplates: {
                     compileReadQuery: function() { return null; },
 
                     onAddedObject: function(taskTemplate) {
@@ -266,25 +264,25 @@ module.exports = NoGapDef.component({
                             }
                         };
 
-                        var allTaskSettings = ThisComponent.learningPathView.allTaskSettings;
+                        var allTaskSettings = ThisComponent.learningGraphView.allTaskSettings;
                         allTaskSettings.list.push(newSettings);
                         allTaskSettings.byId[taskTemplate.taskTemplateId] = newSettings;
                     },
 
                     onRemovedObject: function(taskTemplate) {
-                        delete ThisComponent.learningPathView.allTaskSettings[taskTemplate.taskTemplateId];
+                        delete ThisComponent.learningGraphView.allTaskSettings[taskTemplate.taskTemplateId];
                     },
 
                     onCacheChanged: function() {
-                        ThisComponent.learningPathView.onGraphUpdate();
+                        ThisComponent.learningGraphView.onGraphUpdate();
                     }
                 },
 
-                learningPathTaskDependencies: {
+                learningGraphTaskDependencies: {
                     compileReadQuery: function() { return null; },
 
                     onCacheChanged: function() {
-                        ThisComponent.learningPathView.onGraphUpdate();
+                        ThisComponent.learningGraphView.onGraphUpdate();
                     }
                 },
             },

@@ -1,5 +1,5 @@
 /**
- * LearningPathTemplate
+ * LearningGraphTaskDependency
  */
 "use strict";
 
@@ -11,21 +11,19 @@ module.exports = NoGapDef.component({
         return {
 
             // ####################################################
-            // 
+            // DataProviders
+
             DataProviders: {
-                learningPathTaskTemplates: {
-                    idProperty: 'learningPathTemplateTaskId',
+                learningGraphTaskDependencies: {
+                    idProperty: 'learningGraphTaskDependencyId',
+
+                    hasHostMemorySet: 1,
 
                     indices: [
                     ],
-
-                    /*InstanceProto: {
-
-                    },*/
-
-
                 }
-            },
+            }
+
         };
     }),
 
@@ -38,6 +36,7 @@ module.exports = NoGapDef.component({
                 SequelizeUtil = require(ApplicationRoot + 'lib/SequelizeUtil');
             },
 
+
             initModel: function() {
                 var This = this;
                 var DataTypes = Sequelize;
@@ -45,29 +44,29 @@ module.exports = NoGapDef.component({
                 /**
                  * User object definition.
                  */
-                return sequelize.define('LearningPathTaskTemplate', {
-                    learningPathTemplateTaskId: {type: DataTypes.INTEGER.UNSIGNED, primaryKey: true, autoIncrement: true},
+                return sequelize.define('LearningGraphTaskDependency', {
+                    learningGraphTaskDependencyId: {type: DataTypes.INTEGER.UNSIGNED, primaryKey: true, autoIncrement: true},
 
-                    learningPathTemplateId: {
+                    learningGraphTemplateId: {
+                        type: DataTypes.INTEGER.UNSIGNED
+                    },
+
+                    fromTaskTemplateId: {
                         type: DataTypes.INTEGER.UNSIGNED,
                         allowNull: false
                     },
 
-                    title: DataTypes.STRING(256),
-                    description: DataTypes.TEXT,
-                    isRequired: DataTypes.BOOLEAN,
-                    ownerType: DataTypes.INTEGER.UNSIGNED,
-
-                    proofTypeId: {
+                    toTaskTemplateId: {
                         type: DataTypes.INTEGER.UNSIGNED,
-                        // references: {
-                        //     model: 'ProofType',
-                        //     key: 'proofTypeId'
-                        // }
-                    }
+                        allowNull: false
+                    },
+                    
+                    // startTime: 
+                    // endTime:
+
                 },{
                     freezeTableName: true,
-                    tableName: 'LearningPathTaskTemplate',
+                    tableName: 'LearningGraphTaskDependency',
 
                     classMethods: {
                         onBeforeSync: function(models) {
@@ -85,12 +84,8 @@ module.exports = NoGapDef.component({
 
             
             DataProviders: {
-                learningPathTaskTemplates: {
-                    idProperty: 'learningPathTemplateId',
-
+                learningGraphTaskDependencies: {
                     members: {
-                        onRemovedObject: function(user) {
-                        },
 
                         /**
                          * 
@@ -102,25 +97,9 @@ module.exports = NoGapDef.component({
                             }
 
                             var queryData = {
-                                include: Shared.User.userAssociations,
-                                where: {},
-
-                                // ignore sensitive attributes
-                                attributes: Shared.User.visibleUserAttributes
+                                include: null,
+                                where: {}
                             };
-
-                            if (queryInput.uid) {
-                                queryData.where.uid = queryInput.uid;
-                            }
-                            else if (queryInput.facebookID) {
-                                queryData.where.facebookID = queryInput.facebookID;
-                            }
-                            else if (queryInput.userName) {
-                                queryData.where.userName = queryInput.userName;
-                            }
-                            else {
-                                return Promise.reject(makeError('error.invalid.request'));
-                            }
 
                             return queryData;
                         },
@@ -144,5 +123,5 @@ module.exports = NoGapDef.component({
                 }
             },
         };
-    })
+    }),
 });

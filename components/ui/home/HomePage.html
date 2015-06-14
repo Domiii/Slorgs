@@ -7,7 +7,7 @@
 	
 	<div>
 		<div flexgraph
-		 	ng-model="learningPathView"
+		 	ng-model="learningGraphView"
 			ng-style="{
 			}">
 
@@ -23,7 +23,7 @@
 
 				<span ng-if="editing">
 					<a href="#" class="btn btn-lg btn-dark"
-						ng-click="learningPathView.addLearningPathTemplate()"
+						ng-click="learningGraphView.addLearningGraphTemplate()"
 						onfocus="$(this).blur();">
 						<i class="fa fa-plus" style="font-size: 2em; color: lightgreen;"></i>
 						Add Learning Path
@@ -31,22 +31,22 @@
 				</span>
 
 				<span class="pull-right" style="height: 1em; color: white;">
-					<!-- {{learningPathView.allTaskSettings.list.length || 0}} task(s) -->
+					<!-- {{learningGraphView.allTaskSettings.list.length || 0}} task(s) -->
 				</span>
 			</div>
 
-			<!-- TODO: Only show data of currently context learningPaths -->
-			<!-- invisible LearningPath layer -->
-			<!-- <div ng-repeat="learningPathTemplate in learningPathTemplates.list"
+			<!-- TODO: Only show data of currently context learningGraphs -->
+			<!-- invisible LearningGraph layer -->
+			<!-- <div ng-repeat="learningGraphTemplate in learningGraphTemplates.list"
 				style="background: rgba(255,0,0,1)"> -->
 
 
 				<!-- Task node -->
-				<div flexgraph-node ng-repeat="taskSettings in learningPathView.allTaskSettings.list"
-					id="{{taskSettings.task.learningPathTemplateTaskId}}"
+				<div flexgraph-node ng-repeat="taskSettings in learningGraphView.allTaskSettings.list"
+					id="{{taskSettings.task.learningGraphTemplateTaskId}}"
 					ng-model="taskSettings"
 					style="background: rgba(0,0,0, 0);"
-					code="p = learningPathView.layout.getPoint(taskSettings.task.learningPathTemplateTaskId).p;">
+					code="p = learningGraphView.layout.getPoint(taskSettings.task.learningGraphTemplateTaskId).p;">
 
 					<div style="background: white; border-radius: 6px; display: inline-block;">
 						<!-- node summary -->
@@ -55,7 +55,7 @@
 								style="background: white; height: 100%; display: inline-block;"
 								onfocus="$(this).blur();"><i class="fa fa-circle-thin" style="font-size: 2em;"></i
 							></a><a class="btn btn-default" href="#"
-								ng-click="learningPathView.toggleTaskOpen(taskSettings)"
+								ng-click="learningGraphView.toggleTaskOpen(taskSettings)"
 								style="background: white; font-size: 1em; vertical-align: middle;"
 								onfocus="$(this).blur();">
 
@@ -87,7 +87,7 @@
 						style="display: inline-block; position: relative;">
 						
 						<a href="#" class="btn btn-lg btn-dark"
-							ng-click="learningPathView.addChildTask(taskTemplate)"
+							ng-click="learningGraphView.addChildTask(taskTemplate)"
 							onfocus="$(this).blur();">
 							<i class="fa fa-plus" style="font-size: 2em; color: lightgreen;"></i>
 						</a>
@@ -95,7 +95,7 @@
 				</div>
 
 				<!-- Task dependency edge -->
-				<flexgraph-edge ng-repeat="dependencyEdge in learningPathTaskDependencies.list"
+				<flexgraph-edge ng-repeat="dependencyEdge in learningGraphTaskDependencies.list"
 					ng-model="dependencyEdge">
 					<!-- {{edge}} -->
 				</flexgraph-edge>

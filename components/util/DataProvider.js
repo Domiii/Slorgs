@@ -41,10 +41,10 @@ module.exports = NoGapDef.component({
             // ##########################################################################################
             // Memory sets
 
-            _memorySets: {},
+            memorySets: {},
 
             getOrCreateMemorySet: function(name, dataProviderDescriptor) {
-                return this._memorySets[name] = (this._memorySets[name] || new this.MemorySet(dataProviderDescriptor));
+                return this.memorySets[name] = (this.memorySets[name] || new this.MemorySet(dataProviderDescriptor));
             },
 
             MemorySet: squishy.createClass(function(dataProviderDescriptor) {
@@ -404,8 +404,8 @@ module.exports = NoGapDef.component({
 
             clearAllCaches: function() {
                 // TODO: Make sure, this is in sync with client
-                for (var dataProviderName in this._memorySets) {
-                    var memorySet = this._memorySets[dataProviderName];
+                for (var dataProviderName in this.memorySets) {
+                    var memorySet = this.memorySets[dataProviderName];
                     memorySet.clear();
                 };
             },
@@ -738,7 +738,7 @@ module.exports = NoGapDef.component({
                 // methods
 
                 hasMemorySet: function() {
-                    return !!this._memorySet;
+                    return !!this.memorySet;
                 },
 
                 hasHostMemorySet: function() {
@@ -746,15 +746,15 @@ module.exports = NoGapDef.component({
                 },
 
                 _reset: function(hasMemorySet) {
-                    hasMemorySet = hasMemorySet || this._memorySet;
+                    hasMemorySet = hasMemorySet || this.memorySet;
 
                     if (hasMemorySet) {
                         // a DataProvider stores a list and `byId` index of the same set of objects:
                         // Lists make iterating faster, while the `byId` index makes look-up by id faster.
-                        this._memorySet = Shared.DataProvider.getOrCreateMemorySet(this.name, this._dataProviderDescriptor);
-                        this.list = this._memorySet.list;
-                        this.byId = this._memorySet.byId;
-                        this.indices = this._memorySet.indices;
+                        this.memorySet = Shared.DataProvider.getOrCreateMemorySet(this.name, this._dataProviderDescriptor);
+                        this.list = this.memorySet.list;
+                        this.byId = this.memorySet.byId;
+                        this.indices = this.memorySet.indices;
                     }
                     else {
                         this.list = null;
@@ -1031,7 +1031,7 @@ module.exports = NoGapDef.component({
                                 newValues.updatedAt = new Date(newValues.updatedAt);
 
                                 var key = queryData || queryInput;
-                                this._memorySet.checkUpdatedAt(newValues.updatedAt, key);
+                                this.memorySet.checkUpdatedAt(newValues.updatedAt, key);
                             }
 
                             console.assert(id, 'Invalid object had no but NEEDS an id in `_applyChanges` ' +
@@ -1494,7 +1494,7 @@ module.exports = NoGapDef.component({
 
                         if (this.hasMemorySet() && model.updatedAt) {
                             // NOTE: This is one of the single most important performance optimization in this entire code
-                            var lastUpdatedAt = this._memorySet.getLastUpdatedAt(queryData);
+                            var lastUpdatedAt = this.memorySet.getLastUpdatedAt(queryData);
                             if (lastUpdatedAt) {
                                 // only query objects that we did not query already!
                                 queryData = queryData || {};
@@ -1865,7 +1865,7 @@ module.exports = NoGapDef.component({
 
                         // TODO: Deletions also need to be catched
 
-                        //var since = this._memorySet.getLastUpdatedAt(queryInput);
+                        //var since = this.memorySet.getLastUpdatedAt(queryInput);
                         var since = null;
 
                         // get objects from server

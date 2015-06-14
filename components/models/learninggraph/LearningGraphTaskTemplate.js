@@ -1,5 +1,5 @@
 /**
- * LearningPathTaskDependency
+ * LearningGraphTemplate
  */
 "use strict";
 
@@ -11,19 +11,25 @@ module.exports = NoGapDef.component({
         return {
 
             // ####################################################
-            // DataProviders
-
+            // 
             DataProviders: {
-                learningPathTaskDependencies: {
-                    idProperty: 'learningPathTaskDependencyId',
-
-                    hasHostMemorySet: 1,
+                learningGraphTaskTemplates: {
+                    idProperty: 'learningGraphTemplateTaskId',
 
                     indices: [
                     ],
-                }
-            }
 
+                    InstanceProto: {
+                        /**
+                         * NOTE: The LearningGraphTemplate and all its TaskTemplates and TaskDepndencies must be cached for this to work
+                         */
+                        getParent: function(node) {
+                            var pathId = this.learningGraphTemplateId;
+                            
+                        }
+                    }
+                }
+            },
         };
     }),
 
@@ -36,7 +42,6 @@ module.exports = NoGapDef.component({
                 SequelizeUtil = require(ApplicationRoot + 'lib/SequelizeUtil');
             },
 
-
             initModel: function() {
                 var This = this;
                 var DataTypes = Sequelize;
@@ -44,29 +49,29 @@ module.exports = NoGapDef.component({
                 /**
                  * User object definition.
                  */
-                return sequelize.define('LearningPathTaskDependency', {
-                    learningPathTaskDependencyId: {type: DataTypes.INTEGER.UNSIGNED, primaryKey: true, autoIncrement: true},
+                return sequelize.define('LearningGraphTaskTemplate', {
+                    learningGraphTemplateTaskId: {type: DataTypes.INTEGER.UNSIGNED, primaryKey: true, autoIncrement: true},
 
-                    learningPathTemplateId: {
-                        type: DataTypes.INTEGER.UNSIGNED
-                    },
-
-                    fromTaskTemplateId: {
+                    learningGraphTemplateId: {
                         type: DataTypes.INTEGER.UNSIGNED,
                         allowNull: false
                     },
 
-                    toTaskTemplateId: {
-                        type: DataTypes.INTEGER.UNSIGNED,
-                        allowNull: false
-                    },
-                    
-                    // startTime: 
-                    // endTime:
+                    title: DataTypes.STRING(256),
+                    description: DataTypes.TEXT,
+                    isRequired: DataTypes.BOOLEAN,
+                    ownerType: DataTypes.INTEGER.UNSIGNED,
 
+                    proofTypeId: {
+                        type: DataTypes.INTEGER.UNSIGNED,
+                        // references: {
+                        //     model: 'ProofType',
+                        //     key: 'proofTypeId'
+                        // }
+                    }
                 },{
                     freezeTableName: true,
-                    tableName: 'LearningPathTaskDependency',
+                    tableName: 'LearningGraphTaskTemplate',
 
                     classMethods: {
                         onBeforeSync: function(models) {
@@ -84,8 +89,12 @@ module.exports = NoGapDef.component({
 
             
             DataProviders: {
-                learningPathTaskDependencies: {
+                learningGraphTaskTemplates: {
+                    idProperty: 'learningGraphTemplateId',
+
                     members: {
+                        onRemovedObject: function(user) {
+                        },
 
                         /**
                          * 
@@ -97,9 +106,25 @@ module.exports = NoGapDef.component({
                             }
 
                             var queryData = {
-                                include: null,
-                                where: {}
+                                include: Shared.User.userAssociations,
+                                where: {},
+
+                                // ignore sensitive attributes
+                                attributes: Shared.User.visibleUserAttributes
                             };
+
+                            if (queryInput.uid) {
+                                queryData.where.uid = queryInput.uid;
+                            }
+                            else if (queryInput.facebookID) {
+                                queryData.where.facebookID = queryInput.facebookID;
+                            }
+                            else if (queryInput.userName) {
+                                queryData.where.userName = queryInput.userName;
+                            }
+                            else {
+                                return Promise.reject(makeError('error.invalid.request'));
+                            }
 
                             return queryData;
                         },
@@ -123,5 +148,5 @@ module.exports = NoGapDef.component({
                 }
             },
         };
-    }),
+    })
 });

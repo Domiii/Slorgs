@@ -206,13 +206,13 @@ module.exports = NoGapDef.component({
             {
                 otherComponents: [
                     // other model components
-                    'LearningPathTemplate',
-                    'LearningPathTaskTemplate',
-                    'LearningPathTaskDependency',
+                    'LearningGraphTemplate',
+                    'LearningGraphTaskTemplate',
+                    'LearningGraphTaskDependency',
 
 
                     // other UI components
-                    'LearningPathListElement'
+                    'LearningGraphListElement'
                 ],
 
                 pageComponents: [

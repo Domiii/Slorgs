@@ -13,7 +13,7 @@ module.exports = NoGapDef.component({
         Assets: {
             Files: {
                 string: {
-                    template: 'LearningPathListElement.html'
+                    template: 'LearningGraphListElement.html'
                 }
             },
             AutoIncludes: {
@@ -49,12 +49,12 @@ module.exports = NoGapDef.component({
                 ThisComponent.allGraphData = {};
             },
 
-            LearningPathView: squishy.createClass(function($scope, settings) {
+            LearningGraphView: squishy.createClass(function($scope, settings) {
                 // ctor
                 this.$scope = $scope;
                 _.merge(this, settings);
 
-                var taskTemplates = this.learningPathTemplate.taskTemplates.list;
+                var taskTemplates = this.learningGraphTemplate.taskTemplates.list;
                 var taskSettings = this.taskSettings = {};
                 this.nodesOpen = {};
 
@@ -113,27 +113,27 @@ module.exports = NoGapDef.component({
             setupUI: function(UIMgr, app) {
 
                 // create learning-path-list directive
-                app.lazyController('learningPathList', function($scope) {
+                app.lazyController('learningGraphList', function($scope) {
                     Instance.UIMgr.registerElementScope(this, $scope);
 
 
                     // ###############################################################
-                    // LearningPath data
+                    // LearningGraph data
                     
-                    $scope.bindAttrExpr($attrs, '', function(learningPathTemplates) {
-                        if (!learningPathTemplates) return;
+                    $scope.bindAttrExpr($attrs, '', function(learningGraphTemplates) {
+                        if (!learningGraphTemplates) return;
 
-                        var allLearningPathViews = $scope.allLearningPathViews =
-                            _.mapValues(learningPathTemplates.byId, function(learningPathTemplate) {
-                                return new ThisComponent.LearningPathView($scope, {
-                                    learningPathTemplate: learningPathTemplate,
+                        var allLearningGraphViews = $scope.allLearningGraphViews =
+                            _.mapValues(learningGraphTemplates.byId, function(learningGraphTemplate) {
+                                return new ThisComponent.LearningGraphView($scope, {
+                                    learningGraphTemplate: learningGraphTemplate,
                                 });
                             }); 
                     });
 
 
                     // ###############################################################
-                    // LearningPath other methods
+                    // LearningGraph other methods
 
                     $scope.toggleEditMode = function() {
                         this.editing = !this.editing;
