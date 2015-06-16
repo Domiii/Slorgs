@@ -16,16 +16,32 @@ module.exports = NoGapDef.component({
                 learningGraphTaskTemplates: {
                     idProperty: 'learningGraphTemplateTaskId',
 
+                    hasHostMemorySet: 1,
+
                     indices: [
+                        {
+                            key: ['learningGraphTemplateId']
+                        }
                     ],
 
                     InstanceProto: {
                         /**
                          * NOTE: The LearningGraphTemplate and all its TaskTemplates and TaskDepndencies must be cached for this to work
                          */
-                        getParent: function(node) {
-                            var pathId = this.learningGraphTemplateId;
-                            
+                        getParentEdges: function() {
+                            var graphId = this.learningGraphTemplateId;
+                            var dependencies = Shared.DataProvider.memorySets.learningGraphTaskDependencies;
+
+                            var parentEdges = dependencies.indices.parents.get(graphId, this.learningGraphTemplateTaskId);
+                            return parentEdges;
+                        },
+
+                        getChildEdges: function() {
+                            var graphId = this.learningGraphTemplateId;
+                            var dependencies = Shared.DataProvider.memorySets.learningGraphTaskDependencies;
+
+                            var parentEdges = dependencies.indices.children.get(graphId, this.learningGraphTemplateTaskId);
+                            return parentEdges;
                         }
                     }
                 }
@@ -81,6 +97,7 @@ module.exports = NoGapDef.component({
                             var tableName = this.getTableName();
                             return Promise.join(
                                 // create indices
+                                SequelizeUtil.createIndexIfNotExists(tableName, ['learningGraphTemplateId'])
                             );
                         }
                     }

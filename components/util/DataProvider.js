@@ -2146,10 +2146,10 @@ module.exports = NoGapDef.component({
 
                 var promise = Promise.all(promises);
                 if (component.onDataUpdate) {
-                    promise = promise.then(component.onDataUpdate);
+                    promise = promise.then(component.onDataUpdate.bind(component));
                 }
                 if (component.onDataUpdateFailed) {
-                    promise = promise.catch(component.onDataUpdateFailed);
+                    promise = promise.catch(component.onDataUpdateFailed.bind(component));
                 }
                 return promise;
             },

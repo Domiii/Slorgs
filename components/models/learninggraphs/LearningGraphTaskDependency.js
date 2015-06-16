@@ -20,7 +20,31 @@ module.exports = NoGapDef.component({
                     hasHostMemorySet: 1,
 
                     indices: [
+                        {
+                            name: 'children',
+                            key: ['learningGraphTemplateId', 'fromTaskTemplateId']
+                        },
+                        {
+                            name: 'parents',
+                            key: ['learningGraphTemplateId', 'toTaskTemplateId']
+                        }
                     ],
+
+                    InstanceProto: {
+                        getParent: function() {
+                            var graphId = this.learningGraphTemplateId;
+                            var taskTemplates = Shared.DataProvider.memorySets.learningGraphTaskTemplates;
+
+                            return taskTemplates.byId[this.fromTaskTemplateId];
+                        },
+
+                        getChild: function() {
+                            var graphId = this.learningGraphTemplateId;
+                            var taskTemplates = Shared.DataProvider.memorySets.learningGraphTaskTemplates;
+
+                            return taskTemplates.byId[this.toTaskTemplateId];
+                        },
+                    }
                 }
             }
 
@@ -76,6 +100,8 @@ module.exports = NoGapDef.component({
                             var tableName = this.getTableName();
                             return Promise.join(
                                 // create indices
+                                SequelizeUtil.createIndexIfNotExists(tableName, ['learningGraphTemplateId']),
+                                SequelizeUtil.createIndexIfNotExists(tableName, ['fromTaskTemplateId', 'toTaskTemplateId'], { indexOptions: 'UNIQUE'})
                             );
                         }
                     }
