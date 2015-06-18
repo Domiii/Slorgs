@@ -1,0 +1,11 @@
+.graph-toolbar {
+	position: relative;
+	background: rgba(255,255,255, 0.1);
+	vertical-align: middle;
+	z-index: 10000;
+}
+
+.graph-edit {
+	position: relative;
+	z-index: 10001;
+}

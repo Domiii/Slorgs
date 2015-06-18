@@ -100,8 +100,11 @@ module.exports = NoGapDef.component({
                             var tableName = this.getTableName();
                             return Promise.join(
                                 // create indices
-                                SequelizeUtil.createIndexIfNotExists(tableName, ['learningGraphTemplateId']),
-                                SequelizeUtil.createIndexIfNotExists(tableName, ['fromTaskTemplateId', 'toTaskTemplateId'], { indexOptions: 'UNIQUE'})
+                                SequelizeUtil.createIndexIfNotExists(tableName, 
+                                    ['learningGraphTemplateId']),
+
+                                SequelizeUtil.createIndexIfNotExists(tableName, 
+                                    ['fromTaskTemplateId', 'toTaskTemplateId'], { indexOptions: 'UNIQUE'})
                             );
                         }
                     }

@@ -5,11 +5,12 @@
 	<br />
 	<br />
 
+
 	<div ng-if="PC.isBusy && !learningGraphView" class="" style="margin: auto;">
 		<i class="fa fa-spinner fa-spin" style="font-size: 2em;"></i>
 	</div>
 	
-	<div class="table"
+	<div class="container-fluid"
 		ng-if="!!learningGraphView"><div class="row">
 		<!-- Info panel -->
 		<div class="col-xs-4">
@@ -30,11 +31,11 @@
 			}">
 
  			<!-- buttons -->
-			<div style="background: rgba(255,255,255, 0.3); vertical-align: middle;">
+			<div class="graph-toolbar">
 				<!-- Edit button -->
-				<a href="#" class="btn btn-lg btn-dark some-margin"
+				<a href="#" class="btn btn-lg btn-dark some-margin graph-edit"
 					ng-class="{active: editing}"
-					ng-click="toggleEditMode()"
+					ng-click="toggleEditMode();"
 					onfocus="$(this).blur();">
 					<i class="fa fa-edit" style="font-size: 2em;"></i>
 				</a>
@@ -97,7 +98,7 @@
 						style="display: inline-block; position: relative;">
 						
 						<a href="#" class="btn btn-lg btn-dark"
-							ng-click="learningGraphView.createChildTask(taskTemplate)"
+							ng-click="learningGraphView.createChildTask(taskSettings.task)"
 							onfocus="$(this).blur();">
 							<i class="fa fa-plus" style="font-size: 2em; color: lightgreen;"></i>
 						</a>
@@ -106,7 +107,9 @@
 
 				<!-- Task dependency edge -->
 				<flexgraph-edge ng-repeat="dependencyEdge in learningGraphTaskDependencies.list"
-					ng-model="dependencyEdge">
+					ng-model="dependencyEdge"
+					from="fromTaskTemplateId"
+					to="toTaskTemplateId">
 					<!-- {{edge}} -->
 				</flexgraph-edge>
 			<!-- </div> -->

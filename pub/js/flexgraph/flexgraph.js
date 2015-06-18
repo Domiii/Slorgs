@@ -254,20 +254,36 @@
                 inited = true;
 
                 var edgeAllData = $ngModelCtrl.$modelValue = $ngModelCtrl.$modelValue;
-                console.assert(edgeAllData && edgeAllData.from && edgeAllData.to, 
-                    'invalid  `flexgraph-edge` - must have `ng-model` attribute, containing at least `from` and `to` (node ids): ' + 
+                console.assert(edgeAllData && edgeAllData.edge,
+                    'invalid  `flexgraph-edge` - does not have a valid `ng-model` object. ' +
+                    'Must contain `edge` (with `' + fromProp + '` and `' + toProp + '` (node ids)) ' +
+                    'and optional `dynamics` properties: ' +
                     JSON.stringify(edgeAllData));
 
-                var edgeData = edgeAllData.dynamics || {};
-                var from = $scope.graph.getNode(edgeAllData.from.toString());
-                var to = $scope.graph.getNode(edgeAllData.to.toString());
+
+                var edge = edgeAllData.edge;
+
+                var fromProp = $attrs.from || 'from';
+                var toProp = $attrs.to || 'to';
+
+                var fromId = edge[fromProp];
+                var toId = edge[toProp];
+
+                console.assert(from && to,
+                    'invalid  `flexgraph-edge` - does not have a valid `ng-model` object. ' +
+                    'Must contain `edge` (with `' + fromProp + '` and `' + toProp + '` (node ids)) ' +
+                    'and optional `dynamics` properties: ' +
+                    JSON.stringify(edgeAllData));
+
+                var edgeDynamics = edge.dynamics || {};
+                var from = $scope.graph.getNode(from.toString());
+                var to = $scope.graph.getNode(to.toString());
 
                 if (!from || !to) {
                     throw new Error('invalid  `flexgraph-edge` - invalid `from` or `to` node ids: ' + JSON.stringify(edgeAllData));
                 }
 
                 $scope._plumbInstance.connect({
-                    //source: edgeAllData.from.toString(),
                     source: from.data.$element,
                     target: to.data.$element,
                     type: 'basic'
@@ -278,7 +294,7 @@
                 // see: http://jsfiddle.net/gXuS7/
 
                 // add new springy edge
-                $scope._edge = $scope.graph.newEdge(from, to, edgeData);
+                $scope._edge = $scope.graph.newEdge(from, to, edgeDynamics);
 
                 $scope.$on('destroy', function() {
                     // remove node

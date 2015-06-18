@@ -17,6 +17,9 @@ module.exports = NoGapDef.component({
                 }
             },
             AutoIncludes: {
+                css: [
+                    'LearningGraph'
+                ]
             }
         },
                 
@@ -218,15 +221,14 @@ module.exports = NoGapDef.component({
 
 
                 /**
-                 * Introduce (or adjust) virtual nodes to add certain structure to the graph.
+                 * Introduce (or adjust) virtual nodes to add additional structure to the graph.
                  * We currently use virtual nodes to:
                  *
                  * 1. Layout grpahs from top to bottom
                  * 2. Keep the set of "current tasks to do" close to each other
                  */
                 _recomputeVirtualForces: function() {
-                    // TODO: Topological sorting? At least we need depth information?
-                    // TODO: Virtual nodes for containing and constraining the graph
+                    // TODO: Topological sorting?
 
                     var taskTemplateData = Instance.LearningGraphTaskTemplate.learningGraphTaskTemplates;
                     var taskDependencyData = Instance.LearningGraphTaskDependency.learningGraphTaskDependencies;
@@ -295,7 +297,7 @@ module.exports = NoGapDef.component({
                     // LearningGraph other methods
 
                     $scope.toggleEditMode = function() {
-                        this.editing = !this.editing;
+                        $scope.editing = !$scope.editing;
                     };
 
 
@@ -367,8 +369,12 @@ module.exports = NoGapDef.component({
                 //     });
 
                 var $scope = ThisComponent.page.scope;
-                ThisComponent.learningGraphView = $scope.learningGraphView = new ThisComponent.LearningGraphView($scope, {});
-                ThisComponent.learningGraphView.setLearningGraphs(Instance.LearningGraphTemplate.learningGraphTemplates.list);
+                if ($scope.learningGraphView) return;
+
+                ThisComponent.learningGraphView = 
+                    $scope.learningGraphView = new ThisComponent.LearningGraphView($scope, {});
+                ThisComponent.learningGraphView.setLearningGraphs(
+                    Instance.LearningGraphTemplate.learningGraphTemplates.list);
             },
             
             /**
