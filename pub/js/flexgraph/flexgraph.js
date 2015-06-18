@@ -129,6 +129,11 @@
 
                         // update node position
                         var $nodeEl = node.data.$element;
+                        if (!$nodeEl) {
+                            return;
+                            //$nodeEl = node.data.$element = $element.append('<div class="flexgraph-node">v</div>');
+                        }
+
                         var w = $nodeEl.outerWidth();
                         var h = $nodeEl.outerHeight();
                         $nodeEl.css({
@@ -197,10 +202,10 @@
                     throw new Error('invalid `flexgraph-node` - is missing id');
                 }
 
-                var nodeData = allNodeData.data = allNodeData.dynamics || {};
-                nodeData.$element = $element;
+                var nodeDynamics = allNodeData.dynamics = allNodeData.dynamics || {};
+                nodeDynamics.$element = $element;
 
-                $scope._node = new Springy.Node(id, nodeData);
+                $scope._node = new Springy.Node(id, nodeDynamics);
                 $scope.graph.addNode($scope._node);
 
                 var plumbInstance = $scope._plumbInstance;
@@ -266,18 +271,17 @@
                 var fromProp = $attrs.from || 'from';
                 var toProp = $attrs.to || 'to';
 
-                var fromId = edge[fromProp];
-                var toId = edge[toProp];
+                var fromId = edge[fromProp] || '';
+                var toId = edge[toProp] || '';
+
+                var edgeDynamics = edgeAllData.dynamics || {};
+                var from = $scope.graph.getNode(fromId.toString());
+                var to = $scope.graph.getNode(toId.toString());
 
                 console.assert(from && to,
-                    'invalid  `flexgraph-edge` - does not have a valid `ng-model` object. ' +
-                    'Must contain `edge` (with `' + fromProp + '` and `' + toProp + '` (node ids)) ' +
-                    'and optional `dynamics` properties: ' +
-                    JSON.stringify(edgeAllData));
-
-                var edgeDynamics = edge.dynamics || {};
-                var from = $scope.graph.getNode(from.toString());
-                var to = $scope.graph.getNode(to.toString());
+                    'invalid  `flexgraph-edge` - has invalid node id(s): ' + 
+                        _.remove([!from && ('`' + fromProp + '` = ' + fromId), !to && ('`' + toProp + '` = ' + toId)], null).join(' and ') + 
+                        ' - ' + JSON.stringify(edgeAllData));
 
                 if (!from || !to) {
                     throw new Error('invalid  `flexgraph-edge` - invalid `from` or `to` node ids: ' + JSON.stringify(edgeAllData));

@@ -64,7 +64,11 @@ module.exports = NoGapDef.component({
                 this.graph = new Springy.Graph()
 
                 this._updateTimer = null;
-                this._virtualNodes = [];
+
+                this._virtualForces = {
+                    nodes: [],
+                    edges: []
+                };
             },{
                 // methods
                 setLearningGraphs: function(learningGraphTemplates) {
@@ -73,9 +77,16 @@ module.exports = NoGapDef.component({
                         byId: _.indexBy(learningGraphTemplates, 'learningGraphTemplateId')
                     };
 
-                    // reset taskSettings
+                    // reset taskNodes
                     var learningGraphTaskTemplateData = Instance.LearningGraphTaskTemplate.learningGraphTaskTemplates;
-                    this.allTaskSettings = {
+                    var learningGraphTaskDependenciesData = Instance.LearningGraphTaskDependency.learningGraphTaskDependencies;
+                    
+                    this.allTaskNodes = {
+                        list: [],
+                        byId: {}
+                    };
+
+                    this.allTaskEdges = {
                         list: [],
                         byId: {}
                     };
@@ -83,8 +94,14 @@ module.exports = NoGapDef.component({
                     for (var i = 0; i < this.learningGraphTemplates.list.length; ++i) {
                         var graph = this.learningGraphTemplates.list[i];
                         var tasks = learningGraphTaskTemplateData.indices.learningGraphTemplateId.get(graph.learningGraphTemplateId);
-                        tasks.forEach(this.addTaskSettings.bind(this));
+                        var dependencies = learningGraphTaskDependenciesData.indices.learningGraphTemplateId.get(graph.learningGraphTemplateId);
+
+                        tasks.forEach(this.addTaskNode.bind(this));
+                        dependencies.forEach(this.addTaskEdge.bind(this));
                     };
+
+                    // add virtual forces
+                    this._recomputeVirtualForces();
 
 
                     // re-compute layout
@@ -92,17 +109,17 @@ module.exports = NoGapDef.component({
                     this.renderer.start();
                 },
 
-                toggleTaskOpen: function(taskSettings) {
-                    taskSettings.isSelected = !taskSettings.isSelected;
-                    if (this.selectedTaskSettings) {
-                        this.selectedTaskSettings.isSelected = false;
+                toggleTaskOpen: function(taskNode) {
+                    taskNode.isSelected = !taskNode.isSelected;
+                    if (this.selectedTaskNode) {
+                        this.selectedTaskNode.isSelected = false;
                     }
 
-                    if (taskSettings.isSelected) {
-                        this.selectedTaskSettings = taskSettings;
+                    if (taskNode.isSelected) {
+                        this.selectedTaskNode = taskNode;
                     }
                     else {
-                        this.selectedTaskSettings = null;
+                        this.selectedTaskNode = null;
                     }
 
                     // re-compute layout
@@ -113,20 +130,53 @@ module.exports = NoGapDef.component({
                  * Create a wrapper for the given taskTemplate for UI representation.
                  * Called when new TaskTemplate has been added to cache or set of viewed graphs/tasks has changed.
                  */
-                addTaskSettings: function(taskTemplate) {
+                addTaskNode: function(taskTemplate) {
                     // check if Task is currently visible
                     if (!this.learningGraphTemplates.byId[taskTemplate.learningGraphTemplateId]) return;
 
-                    var newSettings = {
+                    var newNode = {
                         task: taskTemplate,
                         dynamics: {
                             //dontAttractToCenter: true
                         }
                     };
 
-                    var allTaskSettings = this.allTaskSettings;
-                    allTaskSettings.list.push(newSettings);
-                    allTaskSettings.byId[taskTemplate.taskTemplateId] = newSettings;
+                    var allTaskNodes = this.allTaskNodes;
+                    allTaskNodes.list.push(newNode);
+                    allTaskNodes.byId[taskTemplate.learningGraphTemplateTaskId] = newNode;
+                },
+
+                removeTaskNode: function(taskTemplate) {
+                    _.remove(this.allTaskNodes.list, function(taskNode) { 
+                        return taskNode.task == taskTemplate;
+                    });
+                    delete this.allTaskNodes.byId[taskTemplate.learningGraphTemplateTaskId];
+                },
+
+                /**
+                 * Create a wrapper for the given taskTemplate for UI representation.
+                 * Called when new TaskTemplate has been added to cache or set of viewed graphs/tasks has changed.
+                 */
+                addTaskEdge: function(taskDependency) {
+                    // check if dependency is currently visible
+                    if (!this.learningGraphTemplates.byId[taskDependency.learningGraphTemplateId]) return;
+
+                    var newEdge = {
+                        edge: taskDependency,
+                        dynamics: {
+                        }
+                    };
+
+                    var allTaskEdges = this.allTaskEdges;
+                    allTaskEdges.list.push(newEdge);
+                    allTaskEdges.byId[taskDependency.learningGraphTaskDependencyId] = newEdge;
+                },
+
+                removeTaskEdge: function(taskDependency) {
+                    _.remove(this.allTaskEdges.list, function(taskNode) {
+                        return taskNode.edge == taskDependency;
+                    });
+                    delete this.allTaskEdges.byId[taskDependency.learningGraphTaskDependencyId];
                 },
 
 
@@ -173,12 +223,11 @@ module.exports = NoGapDef.component({
                 createChildTask: function(parentTaskTemplate) {
                     var learningGraphTaskTemplates = Instance.LearningGraphTaskTemplate.learningGraphTaskTemplates;
                     var learningGraphTaskDependencies = Instance.LearningGraphTaskDependency.learningGraphTaskDependencies;
-                    var lastTaskTemplate = _.last(learningGraphTaskTemplates.list);
 
                     var _newTaskTemplate = {
                         learningGraphTemplateId: parentTaskTemplate.learningGraphTemplateId,
 
-                        title: 'new task #' + (lastTaskTemplate && lastTaskTemplate.taskTemplateId+1 || 1),
+                        title: 'new task',
                         description: '',
                         isRequired: true
                     };
@@ -190,8 +239,8 @@ module.exports = NoGapDef.component({
                         var _newEdge = {
                             learningGraphTemplateId: parentTaskTemplate.learningGraphTemplateId,
 
-                            fromTaskTemplateId: parentTaskTemplate.learningGraphTemplateId,
-                            toTaskTemplateId: newTaskTemplate.learningGraphTemplateId,
+                            fromTaskTemplateId: parentTaskTemplate.learningGraphTemplateTaskId,
+                            toTaskTemplateId: newTaskTemplate.learningGraphTemplateTaskId,
                         };
                         return learningGraphTaskDependencies.createObject(_newEdge)
                     })
@@ -228,27 +277,65 @@ module.exports = NoGapDef.component({
                  * 2. Keep the set of "current tasks to do" close to each other
                  */
                 _recomputeVirtualForces: function() {
-                    // TODO: Topological sorting?
+                    var graph = this.graph;
+                    if (!graph) return;
+
+                    ThisComponent.page.invalidateView();
+
+                    for (var i = 0; i < this._virtualForces.nodes.length; ++i) {
+                        var node = this._virtualForces.nodes[i];
+                        graph.removeNode(node);
+                    };
+
+                    for (var i = 0; i < this._virtualForces.edges.length; ++i) {
+                        var edge = this._virtualForces.edges[i];
+                        graph.removeEdge(edge);
+                    };
+
+                    this._virtualForces = {
+                        nodes: [],
+                        edges: []
+                    };
+
+                    // single root + leaf nodes -> All other roots and leaf are connected to these respectively
+                    this._virtualForces.nodes.push(this._rootNode = 
+                        graph.addNode(new Springy.Node('root', {
+                            isStatic: true,
+                            initialPosition: new Springy.Vector(0, -30)
+                        }))
+                    );
+                    this._virtualForces.nodes.push(this._leafNode = 
+                        graph.addNode(new Springy.Node('leaf', {
+                            isStatic: true,
+                            initialPosition: new Springy.Vector(0, 30)
+                        }))
+                    );
+
 
                     var taskTemplateData = Instance.LearningGraphTaskTemplate.learningGraphTaskTemplates;
                     var taskDependencyData = Instance.LearningGraphTaskDependency.learningGraphTaskDependencies;
 
                     // virtual node types for: Roots, leafs, "important" tasks
                     // iterate over all currently visible task nodes
-                    for (var i = 0; i < this.allTaskSettings.length; ++i) {
-                        var settings = this.allTaskSettings[i];
-                        var childEdges = settings.task.getChildEdges();
-                        var parentEdges = settings.task.getParentEdges();
+                    for (var i = 0; i < this.allTaskNodes.list.length; ++i) {
+                        var taskNode = this.allTaskNodes.list[i];
+                        var id = taskNode.task.learningGraphTemplateTaskId;
+                        var flexNode = graph.getNode(id.toString());      // node visible in UI
+                        console.assert(flexNode, 'Invalid task does not have a node: ' + JSON.stringify(taskNode.task));
+
+                        var childEdges = taskNode.task.getChildEdges();
+                        var parentEdges = taskNode.task.getParentEdges();
                         var isRoot = !parentEdges || parentEdges.length == 0;
                         var isLeaf = !childEdges || childEdges.length == 0;
 
                         if (isRoot) {
-                            // root node
-                            
+                            // connect this inner-graph root node to global root node
+                            this._virtualForces.edges.push(graph.newEdge(this._rootNode, flexNode, {}));
                         }
 
                         if (isLeaf) {
                             // leaf node
+                            this._virtualForces.edges.push(graph.newEdge(this._leafNode, flexNode, {}));
                         }
 
                         // if () {
@@ -263,7 +350,7 @@ module.exports = NoGapDef.component({
                  */
                 addVirtualNode: function(settings) {
                     // TOOD: !
-                    // this.allTaskSettings.ById[_.first(taskTemplates).taskTemplateId] = {
+                    // this.allTaskNodes.ById[_.first(taskTemplates).learningGraphTemplateTaskId] = {
                     //     dynamics: {
                     //         isStatic: true,
                     //         initialPosition: new Springy.Vector(0, 0)
@@ -332,13 +419,13 @@ module.exports = NoGapDef.component({
 
                     onAddedObject: function(taskTemplate) {
                         if (!!ThisComponent.learningGraphView) {
-                            ThisComponent.learningGraphView.addTaskSettings(taskTemplate);
+                            ThisComponent.learningGraphView.addTaskNode(taskTemplate);
                         }
                     },
 
                     onRemovedObject: function(taskTemplate) {
                         if (!!ThisComponent.learningGraphView) {
-                            delete ThisComponent.learningGraphView.allTaskSettings[taskTemplate.taskTemplateId];
+                            ThisComponent.learningGraphView.removeTaskNode(taskTemplate);
                         }
                     },
 
@@ -351,6 +438,18 @@ module.exports = NoGapDef.component({
 
                 learningGraphTaskDependencies: {
                     compileReadQuery: function() { return null; },
+
+                    onAddedObject: function(taskDependency) {
+                        if (!!ThisComponent.learningGraphView) {
+                            ThisComponent.learningGraphView.addTaskEdge(taskDependency);
+                        }
+                    },
+
+                    onRemovedObject: function(taskDependency) {
+                        if (!!ThisComponent.learningGraphView) {
+                            ThisComponent.learningGraphView.removeTaskEdge(taskDependency);
+                        }
+                    },
 
                     onCacheChanged: function() {
                         if (!!ThisComponent.learningGraphView) {

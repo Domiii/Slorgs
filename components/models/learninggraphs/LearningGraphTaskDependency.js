@@ -21,6 +21,9 @@ module.exports = NoGapDef.component({
 
                     indices: [
                         {
+                            key: ['learningGraphTemplateId']
+                        },
+                        {
                             name: 'children',
                             key: ['learningGraphTemplateId', 'fromTaskTemplateId']
                         },

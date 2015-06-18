@@ -2102,6 +2102,8 @@ module.exports = NoGapDef.component({
             },
 
             _refreshComponentData: function(component) {
+                if (_.find(this.currentlyActiveComponents, component)) return;
+
                 this.currentlyActiveComponents.push(component);
 
                 var minRefreshDelay = 300;
