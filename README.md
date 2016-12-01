@@ -1,5 +1,7 @@
 ## Slorgs = Slorg with an S
-- 
 
-## MongoDB references
-- [Moving from MySQL to Mongo](https://www.percona.com/live/mysql-conference-2014/sites/default/files/slides/MongoDB_tutorial.pdf)
+A small experiment to intertwine [jsPlumb](https://jsplumbtoolkit.com/) and [Springy](http://getspringy.com/) to make for an automatically layouted, customizable Graph GUI.
+
+Uses Node, Angular and [NoGap](https://github.com/Domiii/NoGap).
+
+![screenshot](http://i.imgur.com/AZv74HU.png)

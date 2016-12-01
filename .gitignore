@@ -18,8 +18,6 @@ appConfig.user.js
 uploads/*
 !pub/uploads
 pub/uploads/*
-!pub/uploads/groupIcons
-pub/uploads/groupIcons/*
 
 # ignore modules
 node_modules/*
@@ -29,13 +27,3 @@ node_modules/*
 .DS_Store
 *.sublime-workspace
 **/.fuse_hidden*
-
-
-
-# ignore Wiki auto-generated files
-wiki/LocalSettings.php
-wiki/images/*
-!wiki/images/.htaccess
-wiki/cache/*
-!wiki/cache/.htaccess
-wikierr.txt
